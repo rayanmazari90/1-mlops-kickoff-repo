@@ -4,5 +4,135 @@ Module: Main Pipeline
 Role: Orchestrate the entire flow (Load -> Clean -> Validate -> Train -> Evaluate).
 Usage: python -m src.main
 """
+"""
+Educational Goal:
+- Why this module exists in an MLOps system: The orchestrator script that ties all components together.
+- Responsibility (separation of concerns): Defining execution order, passing data between modules, and configuration management.
+- Pipeline contract (inputs and outputs): Execution entry point that reads configuration and orchestrates artifacts.
+
+TODO: Replace print statements with standard library logging in a later session
+TODO: Any temporary or hardcoded variable or parameter will be imported from config.yml in a later session
+"""
+
+import pandas as pd
+from pathlib import Path
+from sklearn.model_selection import train_test_split
+
+# Internal package imports
+from src.utils import save_csv, save_model
+from src.load_data import load_raw_data
+from src.clean_data import clean_dataframe
+from src.validate import validate_dataframe
+from src.features import get_feature_preprocessor
+from src.train import train_model
+from src.evaluate import evaluate_model
+from src.infer import run_inference
+
+# ---------------------------------------------------------
+# CONFIGURATION BLOCK (Bridge to YAML)
+# LOUD COMMENT: Students MUST map this SETTINGS block to their real dataset!
+# ---------------------------------------------------------
+SETTINGS = {
+    "is_example_config": True,
+    "target_column": "target",
+    "problem_type": "classification", # Or "regression"
+    "features": {
+        "quantile_bin": ["num_feature"],
+        "categorical_onehot": ["cat_feature"],
+        "numeric_passthrough": [],
+        "n_bins": 3
+    }
+}
+
+def main():
+    print("=== Starting MLOps Pipeline ===") # TODO: replace with logging later
+    
+    # 1. Directory Creation
+    print("\n--- Setup Directories ---")
+    Path("data/raw").mkdir(parents=True, exist_ok=True)
+    Path("data/processed").mkdir(parents=True, exist_ok=True)
+    Path("models").mkdir(parents=True, exist_ok=True)
+    Path("reports").mkdir(parents=True, exist_ok=True)
+    
+    if SETTINGS.get("is_example_config"):
+        print("Note: Running with dummy/example configuration.")
+        
+    # 2. Load
+    print("\n--- Load Data ---")
+    raw_path = Path("data/raw/dummy_dataset.csv")
+    df_raw = load_raw_data(raw_path)
+    
+    # 3. Clean
+    print("\n--- Clean Data ---")
+    df_clean = clean_dataframe(df_raw, SETTINGS["target_column"])
+    
+    # Save processed CSV
+    processed_path = Path("data/processed/clean.csv")
+    save_csv(df_clean, processed_path)
+    
+    # 4. Validate
+    print("\n--- Validate Data ---")
+    # Extract all required columns based on config + target
+    req_cols = [SETTINGS["target_column"]]
+    req_cols.extend(SETTINGS["features"]["quantile_bin"])
+    req_cols.extend(SETTINGS["features"]["categorical_onehot"])
+    req_cols.extend(SETTINGS["features"]["numeric_passthrough"])
+    
+    validate_dataframe(df_clean, required_columns=req_cols)
+    
+    # Fail-fast feature checks (ensure binning columns are numeric)
+    for col in SETTINGS["features"]["quantile_bin"]:
+        if not pd.api.types.is_numeric_dtype(df_clean[col]):
+            raise TypeError(f"Column '{col}' mapped for quantile_bin must be numeric.")
+            
+    # 5. Train / Test Split
+    print("\n--- Train Test Split ---")
+    X = df_clean.drop(columns=[SETTINGS["target_column"]])
+    y = df_clean[SETTINGS["target_column"]]
+    
+    stratify_col = y if SETTINGS["problem_type"] == "classification" else None
+    
+    try:
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.2, random_state=42, stratify=stratify_col
+        )
+    except ValueError as e:
+        print(f"Stratified split failed ({e}). Falling back to unstratified split.")
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.2, random_state=42, stratify=None
+        )
+        
+    # 6. Build Feature Recipe
+    print("\n--- Build Preprocessor ---")
+    preprocessor = get_feature_preprocessor(
+        quantile_bin_cols=SETTINGS["features"]["quantile_bin"],
+        categorical_onehot_cols=SETTINGS["features"]["categorical_onehot"],
+        numeric_passthrough_cols=SETTINGS["features"]["numeric_passthrough"],
+        n_bins=SETTINGS["features"]["n_bins"]
+    )
+    
+    # 7. Train Model
+    print("\n--- Train Pipeline ---")
+    pipeline = train_model(X_train, y_train, preprocessor, SETTINGS["problem_type"])
+    
+    # Save Model Artifact
+    model_path = Path("models/model.joblib")
+    save_model(pipeline, model_path)
+    
+    # 8. Evaluate
+    print("\n--- Evaluate Model ---")
+    metric_value = evaluate_model(pipeline, X_test, y_test, SETTINGS["problem_type"])
+    
+    # 9. Inference on test set (as an example of scoring new data)
+    print("\n--- Run Inference ---")
+    # In a real environment, X_infer would be totally new unseen data
+    df_predictions = run_inference(pipeline, X_test)
+    
+    # Save Predictions Artifact
+    predictions_path = Path("reports/predictions.csv")
+    save_csv(df_predictions, predictions_path)
+    
+    print("\n=== Pipeline Execution Complete ===")
+
 if __name__ == "__main__":
-    print("Pipeline not implemented yet.")
+    main()
