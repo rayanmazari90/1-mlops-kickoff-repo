@@ -34,14 +34,12 @@ from src.infer import run_inference
 # LOUD COMMENT: Students MUST map this SETTINGS block to their real dataset!
 # ---------------------------------------------------------
 SETTINGS = {
-    "is_example_config": True,
-    "target_column": "target",
-    "problem_type": "classification", # Or "regression"
+    "is_example_config": False,
+    "target_column": "player_1_win",
+    "problem_type": "classification",
     "features": {
-        "quantile_bin": ["num_feature"],
-        "categorical_onehot": ["cat_feature"],
-        "numeric_passthrough": [],
-        "n_bins": 3
+        "numeric_pipeline": ["p1_rank", "p2_rank", "rank_diff", "age_diff", "ht_diff"],
+        "categorical_pipeline": ["surface", "tourney_level", "round", "p1_hand", "p2_hand"],
     }
 }
 
@@ -84,26 +82,36 @@ def main():
     
     # 3. Clean
     print("\n--- Clean Data ---")
-    df_clean = clean_dataframe(df_raw, SETTINGS["target_column"])
-    
-    # Save processed CSV
-    processed_path = Path("data/processed/clean.csv")
-    save_csv(df_clean, processed_path)
+    df_clean = clean_dataframe(df_raw, "player_1_win") # The target doesn't exist yet but the validator might check it later
     
     # 4. Validate
     print("\n--- Validate Data ---")
     validate_dataframe(df_clean, config=config)
     
+    # 5. Feature Engineering (NEW STEP)
+    print("\n--- Build Features ---")
+    # We must run build_features before validating the final dataset
+    from src.features import build_features
+    X_all, y_all = build_features(df_clean)
+    
+    # Re-combine temporarily if we want to save the "processed" CSV 
+    # MLOps note: we save the engineered features + target here
+    df_processed = pd.concat([X_all, y_all], axis=1)
+    
+    # Save processed CSV
+    processed_path = Path("data/processed/clean.csv")
+    save_csv(df_processed, processed_path)
+    
     # Fail-fast feature checks for explicitly configured columns
     # In a later session, this will also use config instead of SETTINGS.
-    for col in SETTINGS["features"]["quantile_bin"]:
-        if col in df_clean.columns and not pd.api.types.is_numeric_dtype(df_clean[col]):
-            raise TypeError(f"Column '{col}' mapped for quantile_bin must be numeric.")
+    for col in SETTINGS["features"]["numeric_pipeline"]:
+        if col in df_processed.columns and not pd.api.types.is_numeric_dtype(df_processed[col]):
+            raise TypeError(f"Column '{col}' mapped for numeric_pipeline must be numeric.")
             
-    # 5. Train / Test Split
+    # 6. Train / Test Split
     print("\n--- Train Test Split ---")
-    X = df_clean.drop(columns=[SETTINGS["target_column"]])
-    y = df_clean[SETTINGS["target_column"]]
+    X = df_processed.drop(columns=[SETTINGS["target_column"]])
+    y = df_processed[SETTINGS["target_column"]]
     
     stratify_col = y if SETTINGS["problem_type"] == "classification" else None
     
@@ -117,16 +125,14 @@ def main():
             X, y, test_size=0.2, random_state=42, stratify=None
         )
         
-    # 6. Build Feature Recipe
+    # 7. Build Feature Recipe
     print("\n--- Build Preprocessor ---")
     preprocessor = get_feature_preprocessor(
-        quantile_bin_cols=SETTINGS["features"]["quantile_bin"],
-        categorical_onehot_cols=SETTINGS["features"]["categorical_onehot"],
-        numeric_passthrough_cols=SETTINGS["features"]["numeric_passthrough"],
-        n_bins=SETTINGS["features"]["n_bins"]
+        numeric_cols=SETTINGS["features"]["numeric_pipeline"],
+        categorical_cols=SETTINGS["features"]["categorical_pipeline"]
     )
     
-    # 7. Train Model
+    # 8. Train Model
     print("\n--- Train Pipeline ---")
     pipeline = train_model(X_train, y_train, preprocessor, SETTINGS["problem_type"])
     
@@ -134,11 +140,11 @@ def main():
     model_path = Path("models/model.joblib")
     save_model(pipeline, model_path)
     
-    # 8. Evaluate
+    # 9. Evaluate
     print("\n--- Evaluate Model ---")
     metric_value = evaluate_model(pipeline, X_test, y_test, SETTINGS["problem_type"])
     
-    # 9. Inference on test set (as an example of scoring new data)
+    # 10. Inference on test set (as an example of scoring new data)
     print("\n--- Run Inference ---")
     # In a real environment, X_infer would be totally new unseen data
     df_predictions = run_inference(pipeline, X_test)
