@@ -92,17 +92,12 @@ def main():
     
     # 4. Validate
     print("\n--- Validate Data ---")
-    # Extract all required columns based on config + target
-    req_cols = [SETTINGS["target_column"]]
-    req_cols.extend(SETTINGS["features"]["quantile_bin"])
-    req_cols.extend(SETTINGS["features"]["categorical_onehot"])
-    req_cols.extend(SETTINGS["features"]["numeric_passthrough"])
+    validate_dataframe(df_clean, config=config)
     
-    validate_dataframe(df_clean, required_columns=req_cols)
-    
-    # Fail-fast feature checks (ensure binning columns are numeric)
+    # Fail-fast feature checks for explicitly configured columns
+    # In a later session, this will also use config instead of SETTINGS.
     for col in SETTINGS["features"]["quantile_bin"]:
-        if not pd.api.types.is_numeric_dtype(df_clean[col]):
+        if col in df_clean.columns and not pd.api.types.is_numeric_dtype(df_clean[col]):
             raise TypeError(f"Column '{col}' mapped for quantile_bin must be numeric.")
             
     # 5. Train / Test Split
