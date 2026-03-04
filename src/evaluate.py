@@ -16,11 +16,13 @@ TODO: Replace print statements with standard library logging in a later session
 TODO: Any temporary or hardcoded variable or parameter will be imported from config.yml in a later session
 """
 
+import json
+from pathlib import Path
 import pandas as pd
 import numpy as np
-from sklearn.metrics import mean_squared_error, f1_score
+from sklearn.metrics import mean_squared_error, f1_score, log_loss, brier_score_loss, accuracy_score, roc_auc_score
 
-def evaluate_model(model, X_test: pd.DataFrame, y_test: pd.Series, problem_type: str) -> float:
+def evaluate_model(model, X_test: pd.DataFrame, y_test: pd.Series, problem_type: str) -> dict:
     """
     Inputs:
     - model: The fitted scikit-learn Pipeline.
@@ -28,40 +30,84 @@ def evaluate_model(model, X_test: pd.DataFrame, y_test: pd.Series, problem_type:
     - y_test: The target Series for testing.
     - problem_type: String indicating "regression" or "classification".
     Outputs:
-    - A single float representing the primary evaluation metric (RMSE or F1).
+    - A dictionary representing multiple evaluation metrics.
     Why this contract matters for reliable ML delivery:
     - Automated metrics allow CI/CD systems to block degraded models from reaching production automatically.
     """
     print("Evaluating model performance on test set...") # TODO: replace with logging later
     
-    predictions = model.predict(X_test)
-    
-    # --------------------------------------------------------
-    # START STUDENT CODE
-    # --------------------------------------------------------
-    # TODO_STUDENT: Paste your notebook logic here to replace or extend the baseline
-    # Why: Business stakeholders may care about different metrics (e.g., Precision/Recall vs Accuracy)
-    # Examples:
-    # 1. metric = mean_absolute_error(y_test, predictions)
-    # 2. metric = roc_auc_score(y_test, model.predict_proba(X_test)[:, 1])
-    #
-    # Optional forcing function (leave commented)
-    # raise NotImplementedError("Student: You must implement this logic to proceed!")
-    #
-    # Placeholder (Remove this after implementing your code):
-    print("Warning: Student has not implemented this section yet")
-    # --------------------------------------------------------
-    # END STUDENT CODE
-    # --------------------------------------------------------
+    metrics = {}
     
     if problem_type == "regression":
+        predictions = model.predict(X_test)
         mse = mean_squared_error(y_test, predictions)
-        metric = float(np.sqrt(mse))
-        print(f"Test RMSE: {metric:.4f}")
+        rmse = float(np.sqrt(mse))
+        metrics['rmse'] = rmse
+        print(f"Test RMSE: {rmse:.4f}")
+        
     elif problem_type == "classification":
-        metric = float(f1_score(y_test, predictions, average='weighted'))
-        print(f"Test Weighted F1 Score: {metric:.4f}")
+        # Model predictions
+        predictions = model.predict(X_test)
+        
+        # Probabilities for log_loss, brier_score, AUC
+        if hasattr(model, "predict_proba"):
+            probs = model.predict_proba(X_test)
+            if probs.shape[1] == 2:
+                prob_pos = probs[:, 1]
+            else:
+                prob_pos = probs[:, 0]  # Fallback although sklearn usually outputs class 0, class 1
+        else:
+            prob_pos = predictions.astype(float) # Fallback if predict_proba is not available
+            
+        # Model Metrics
+        metrics["log_loss"] = float(log_loss(y_test, prob_pos))
+        metrics["brier_score"] = float(brier_score_loss(y_test, prob_pos))
+        metrics["accuracy"] = float(accuracy_score(y_test, predictions))
+        
+        # Calculate AUC only if there's variance in y_test
+        if len(np.unique(y_test)) > 1:
+            try:
+                metrics["auc"] = float(roc_auc_score(y_test, prob_pos))
+            except ValueError:
+                metrics["auc"] = None
+        else:
+            metrics["auc"] = None
+            
+        print(f"Model Metrics - Log Loss: {metrics['log_loss']:.4f}, Brier: {metrics['brier_score']:.4f}, Acc: {metrics['accuracy']:.4f}")
+        
+        # Baseline Implementation: Predict player with higher ATP rank (lower rank number)
+        # We need p1_rank and p2_rank in X_test for this.
+        if "p1_rank" in X_test.columns and "p2_rank" in X_test.columns:
+            print("Evaluating baseline (higher rank wins)...")
+            # Lower rank value means higher ranked player
+            # If p1_rank < p2_rank, p1 has higher rank -> predict 1 (p1 wins)
+            baseline_probs = (X_test["p1_rank"] < X_test["p2_rank"]).astype(float)
+            baseline_preds = baseline_probs.round()
+            
+            metrics["baseline_log_loss"] = float(log_loss(y_test, baseline_probs))
+            metrics["baseline_brier_score"] = float(brier_score_loss(y_test, baseline_probs))
+            metrics["baseline_accuracy"] = float(accuracy_score(y_test, baseline_preds))
+            
+            if len(np.unique(y_test)) > 1:
+                try:
+                    metrics["baseline_auc"] = float(roc_auc_score(y_test, baseline_probs))
+                except ValueError:
+                    metrics["baseline_auc"] = None
+            else:
+                metrics["baseline_auc"] = None
+                
+            print(f"Baseline Metrics - Log Loss: {metrics['baseline_log_loss']:.4f}, Brier: {metrics['baseline_brier_score']:.4f}, Acc: {metrics['baseline_accuracy']:.4f}")
     else:
         raise ValueError("problem_type must be 'regression' or 'classification'")
         
-    return metric
+    # Save metrics to JSON artifact
+    reports_dir = Path("reports")
+    reports_dir.mkdir(parents=True, exist_ok=True)
+    metrics_path = reports_dir / "metrics.json"
+    
+    with open(metrics_path, "w") as f:
+        json.dump(metrics, f, indent=4)
+        
+    print(f"Metrics saved to {metrics_path}")
+        
+    return metrics

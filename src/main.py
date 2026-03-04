@@ -142,7 +142,8 @@ def main():
     
     # 9. Evaluate
     print("\n--- Evaluate Model ---")
-    metric_value = evaluate_model(pipeline, X_test, y_test, SETTINGS["problem_type"])
+    metrics = evaluate_model(pipeline, X_test, y_test, SETTINGS["problem_type"])
+    print(f"Evaluation Metrics: {metrics}")
     
     # 10. Inference on test set (as an example of scoring new data)
     print("\n--- Run Inference ---")
