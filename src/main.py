@@ -134,7 +134,7 @@ def main():
     
     # 8. Train Model
     print("\n--- Train Pipeline ---")
-    pipeline = train_model(X_train, y_train, preprocessor, SETTINGS["problem_type"])
+    pipeline = train_model(X_train, y_train, preprocessor, config["model"])
     
     # Save Model Artifact
     model_path = Path("models/model.joblib")

@@ -20,41 +20,41 @@ import pandas as pd
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import Ridge, LogisticRegression
 
-def train_model(X_train: pd.DataFrame, y_train: pd.Series, preprocessor, problem_type: str):
+def train_model(X_train: pd.DataFrame, y_train: pd.Series, preprocessor, model_config: dict):
     """
     Inputs:
     - X_train: The feature DataFrame for training.
     - y_train: The target Series for training.
     - preprocessor: The unfitted ColumnTransformer from features.py.
-    - problem_type: String ("regression" or "classification") to select the baseline model.
+    - model_config: Dictionary containing algorithm choice and hyperparameters.
     Outputs:
     - A fully fitted scikit-learn Pipeline.
     Why this contract matters for reliable ML delivery:
     - Bundling the preprocessor and model into a single Pipeline guarantees exact reproduction of logic during inference.
     """
-    print(f"Training Pipeline for problem type: {problem_type}...") # TODO: replace with logging later
+    algorithm_name = model_config.get("algorithm", "LogisticRegression")
+    print(f"Training Pipeline for algorithm: {algorithm_name}...") # TODO: replace with logging later
     
-    if problem_type == "regression":
-        estimator = Ridge()
-    elif problem_type == "classification":
-        estimator = LogisticRegression(max_iter=500)
-    else:
-        raise ValueError("problem_type must be either 'regression' or 'classification'")
-        
     # --------------------------------------------------------
     # START STUDENT CODE
     # --------------------------------------------------------
-    # TODO_STUDENT: Paste your notebook logic here to replace or extend the baseline
-    # Why: You will want to use more powerful algorithms or hyperparameter tuning here
-    # Examples:
-    # 1. estimator = RandomForestRegressor(n_estimators=100)
-    # 2. estimator = XGBClassifier(learning_rate=0.1)
-    #
-    # Optional forcing function (leave commented)
-    # raise NotImplementedError("Student: You must implement this logic to proceed!")
-    #
-    # Placeholder (Remove this after implementing your code):
-    print("Warning: Student has not implemented this section yet")
+    hyperparams = model_config.get("hyperparams", {})
+    random_seed = model_config.get("random_seed", 42)
+    
+    if algorithm_name == "LogisticRegression":
+        from sklearn.linear_model import LogisticRegression
+        estimator = LogisticRegression(random_state=random_seed, **hyperparams)
+    elif algorithm_name == "RandomForestClassifier":
+        from sklearn.ensemble import RandomForestClassifier
+        estimator = RandomForestClassifier(random_state=random_seed, **hyperparams)
+    elif algorithm_name == "XGBClassifier":
+        from xgboost import XGBClassifier
+        estimator = XGBClassifier(random_state=random_seed, **hyperparams)
+    elif algorithm_name == "Ridge":
+        from sklearn.linear_model import Ridge
+        estimator = Ridge(random_state=random_seed, **hyperparams)
+    else:
+        raise ValueError(f"Algorithm {algorithm_name} is not explicitly supported yet.")
     # --------------------------------------------------------
     # END STUDENT CODE
     # --------------------------------------------------------
