@@ -18,48 +18,75 @@ TODO: Any temporary or hardcoded variable or parameter will be imported from con
 
 import pandas as pd
 from pathlib import Path
+import urllib.request
+import logging
+
 from src.utils import load_csv, save_csv
 
-def load_raw_data(raw_data_path: Path) -> pd.DataFrame:
+logger = logging.getLogger(__name__)
+
+def load_raw_data(
+    raw_dir: Path, 
+    base_url: str, 
+    seasons: list[int], 
+    download_if_missing: bool = True
+) -> pd.DataFrame:
     """
     Inputs:
-    - raw_data_path: Path object pointing to the raw CSV file.
+    - raw_dir: Path object pointing to the data/raw directory.
+    - base_url: The GitHub raw URL where the CSVs are hosted.
+    - seasons: List of years (integers) to load.
+    - download_if_missing: If True, downloads missing files. If False, raises an error.
     Outputs:
-    - pd.DataFrame containing the raw, unmodified data.
+    - pd.DataFrame containing the raw, unmodified data concatenated across all seasons.
+    
     Why this contract matters for reliable ML delivery:
-    - Establishes an immutable starting point for the pipeline, ensuring reproducibility.
+    - Establishes an immutable starting point by caching external data.
+    - Makes the ingestion idempotent and reproducible.
     """
-    print(f"Attempting to load raw data from {raw_data_path}...") # TODO: replace with logging later
+    logger.info(f"Attempting to load raw data for seasons {seasons} from {raw_dir}...")
     
-    if not raw_data_path.exists():
-        print(f"LOUD WARNING: {raw_data_path} does not exist.")
-        print("Creating a dummy dataset with hardcoded columns for scaffolding purposes only!")
-        print("Students must replace this dataset and update their SETTINGS dict.")
+    # Ensure raw_dir exists
+    raw_dir.mkdir(parents=True, exist_ok=True)
+    
+    dfs = []
+    
+    for season in seasons:
+        file_name = f"atp_matches_{season}.csv"
+        file_path = raw_dir / file_name
         
-        dummy_data = {
-            "num_feature": [1.5, 2.3, 3.1, 4.8, 5.0, 6.2, 7.1, 8.9, 9.4, 10.1],
-            "cat_feature": ["A", "B", "A", "C", "B", "A", "C", "C", "B", "A"],
-            "target": [0, 1, 0, 1, 1, 0, 1, 0, 1, 0]
-        }
-        df_dummy = pd.DataFrame(dummy_data)
-        save_csv(df_dummy, raw_data_path)
+        if not file_path.exists():
+            if not download_if_missing:
+                raise FileNotFoundError(
+                    f"File {file_name} is missing in {raw_dir} and download is disabled."
+                )
+            
+            # Download the file
+            url = f"{base_url}{file_name}"
+            # logger.info(f"Downloading missing file: {url}")
+            print(f"Downloading missing file: {url}")
+            
+            try:
+                urllib.request.urlretrieve(url, file_path)
+            except Exception as e:
+                # If download fails, remove partially downloaded file to avoid corrupted cache
+                if file_path.exists():
+                    file_path.unlink()
+                raise RuntimeError(f"Failed to download {url}: {e}") from e
+        
+        # Load the CSV and append to list
+        # Using utils.load_csv for consistency
+        try:
+            df_season = load_csv(file_path)
+            dfs.append(df_season)
+        except Exception as e:
+            raise RuntimeError(f"Failed to read {file_path}: {e}") from e
     
-    # --------------------------------------------------------
-    # START STUDENT CODE
-    # --------------------------------------------------------
-    # TODO_STUDENT: Paste your notebook logic here to replace or extend the baseline
-    # Why: In real environments, you might fetch from a SQL database, S3 bucket, or an API
-    # Examples:
-    # 1. df = pd.read_sql("SELECT * FROM table", conn)
-    # 2. df = fetch_from_s3(bucket, key)
-    #
-    # Optional forcing function (leave commented)
-    # raise NotImplementedError("Student: You must implement this logic to proceed!")
-    #
-    # Placeholder (Remove this after implementing your code):
-    print("Warning: Student has not implemented this section yet")
-    # --------------------------------------------------------
-    # END STUDENT CODE
-    # --------------------------------------------------------
+    if not dfs:
+        raise ValueError("No datasets were loaded. Please check the seasons list.")
+        
+    # Concatenate all seasons into a single dataframe
+    df_combined = pd.concat(dfs, ignore_index=True)
+    print(f"Loaded {len(df_combined)} records across {len(seasons)} seasons.")
     
-    return load_csv(raw_data_path)
+    return df_combined
