@@ -17,142 +17,152 @@ TODO: Any temporary or hardcoded variable or parameter will be imported from con
 import pandas as pd
 from pathlib import Path
 import yaml
-from sklearn.model_selection import train_test_split
 
 # Internal package imports
 from src.utils import save_csv, save_model
 from src.load_data import load_raw_data
 from src.clean_data import clean_dataframe
 from src.validate import validate_dataframe
-from src.features import get_feature_preprocessor
+from src.features import get_feature_preprocessor, build_features
 from src.train import train_model
 from src.evaluate import evaluate_model
 from src.infer import run_inference
 
-# ---------------------------------------------------------
-# CONFIGURATION BLOCK (Bridge to YAML)
-# LOUD COMMENT: Students MUST map this SETTINGS block to their real dataset!
-# ---------------------------------------------------------
-SETTINGS = {
-    "is_example_config": False,
-    "target_column": "player_1_win",
-    "problem_type": "classification",
-    "features": {
-        "numeric_pipeline": ["p1_rank", "p2_rank", "rank_diff", "age_diff", "ht_diff"],
-        "categorical_pipeline": ["surface", "tourney_level", "round", "p1_hand", "p2_hand"],
-    }
-}
-
-def main():
+def main(config_path: str = "config.yaml"):
     print("=== Starting MLOps Pipeline ===") # TODO: replace with logging later
     
-    # 1. Directory Creation
-    print("\n--- Setup Directories ---")
-    Path("data/raw").mkdir(parents=True, exist_ok=True)
-    Path("data/processed").mkdir(parents=True, exist_ok=True)
-    Path("models").mkdir(parents=True, exist_ok=True)
-    Path("reports").mkdir(parents=True, exist_ok=True)
-    
-    if SETTINGS.get("is_example_config"):
-        print("Note: Running with dummy/example configuration.")
+    # 1. Load config and fail fast
+    print("\n--- Load Configuration ---")
+    config_path = Path(config_path)
+    if not config_path.exists():
+        raise FileNotFoundError(f"Configuration file not found: {config_path}")
         
-    # 2. Load
-    print("\n--- Load Data ---")
-    with open("config.yaml", "r") as f:
+    with open(config_path, "r") as f:
         config = yaml.safe_load(f)
         
+    # Check for placeholder strings to fail fast
+    config_str = yaml.dump(config)
+    if "TODO" in config_str or "CHANGEME" in config_str:
+        raise ValueError("Configuration contains unresolved placeholders (TODO/CHANGEME). Please configure them properly.")
+    
+    # Extract config variables
     dataset_cfg = config.get("dataset", {})
     base_url = dataset_cfg.get("base_url")
+    paths_cfg = config.get("paths", {})
+    raw_dir = Path(paths_cfg.get("raw_dir", "data/raw"))
+    processed_dir = Path(paths_cfg.get("processed_dir", "data/processed"))
+    models_dir = Path(paths_cfg.get("models_dir", "models"))
+    reports_dir = Path(paths_cfg.get("reports_dir", "reports"))
     
-    # Combine all seasons meant for the entire pipeline
-    # The split step will later separate train/val/test/infer using Date/Seasons
+    target_column = config.get("schema", {}).get("target", "player_1_win")
+    problem_type = config.get("problem_type", "classification")
+    feat_cfg = config.get("features", {})
+    numeric_pipeline = feat_cfg.get("numeric_pipeline", [])
+    categorical_pipeline = feat_cfg.get("categorical_pipeline", [])
+    
+    # Check if download is forced or allowed
+    download_if_missing = config.get("dataset", {}).get("download_if_missing", True)
+    
+    # Create directories
+    print("\n--- Setup Directories ---")
+    raw_dir.mkdir(parents=True, exist_ok=True)
+    processed_dir.mkdir(parents=True, exist_ok=True)
+    models_dir.mkdir(parents=True, exist_ok=True)
+    reports_dir.mkdir(parents=True, exist_ok=True)
+        
+    # Combine all seasons for fetching data
     seasons = []
     for split_type in ["seasons_train", "seasons_val", "seasons_test", "seasons_infer"]:
         seasons.extend(dataset_cfg.get(split_type, []))
         
-    paths_cfg = config.get("paths", {})
-    raw_dir = Path(paths_cfg.get("raw_dir", "data/raw"))
-    
+    if not seasons:
+        raise ValueError("No seasons configured in dataset config.")
+        
+    # 2. Load
+    print("\n--- Load Data ---")
     df_raw = load_raw_data(
         raw_dir=raw_dir,
         base_url=base_url,
         seasons=seasons,
-        download_if_missing=True
+        download_if_missing=download_if_missing
     )
     
     # 3. Clean
     print("\n--- Clean Data ---")
-    df_clean = clean_dataframe(df_raw, "player_1_win") # The target doesn't exist yet but the validator might check it later
+    df_clean = clean_dataframe(df_raw, target_column)
+    
+    # Save processed CSV for audit
+    clean_path = processed_dir / "clean.csv"
+    save_csv(df_clean, clean_path)
     
     # 4. Validate
     print("\n--- Validate Data ---")
     validate_dataframe(df_clean, config=config)
     
-    # 5. Feature Engineering (NEW STEP)
+    # 5. Early Split by seasons
+    print("\n--- Early Train/Val/Test Split ---")
+    if 'tourney_date' in df_clean.columns:
+        year_series = pd.to_datetime(df_clean['tourney_date'], format="mixed").dt.year
+    else:
+        # Fallback if tourney_date not available (should be due to validation)
+        raise ValueError("tourney_date column missing from cleaned dataframe!")
+        
+    df_clean_train = df_clean[year_series.isin(dataset_cfg.get("seasons_train", []))]
+    df_clean_val = df_clean[year_series.isin(dataset_cfg.get("seasons_val", []))]
+    df_clean_test = df_clean[year_series.isin(dataset_cfg.get("seasons_test", []))]
+    df_clean_infer = df_clean[year_series.isin(dataset_cfg.get("seasons_infer", []))]
+    
+    print(f"Split sizes -> Train: {len(df_clean_train)}, Val: {len(df_clean_val)}, Test: {len(df_clean_test)}, Infer: {len(df_clean_infer)}")
+    
+    if len(df_clean_train) == 0:
+        raise ValueError("Training split is empty. Check your configured 'seasons_train' and the dataset years.")
+        
+    # 6. Feature Engineering
     print("\n--- Build Features ---")
-    # We must run build_features before validating the final dataset
-    from src.features import build_features
-    X_all, y_all = build_features(df_clean)
+    X_train, y_train = build_features(df_clean_train)
+    X_val, y_val = build_features(df_clean_val) if not df_clean_val.empty else (None, None)
+    X_test, y_test = build_features(df_clean_test) if not df_clean_test.empty else (None, None)
+    X_infer, y_infer = build_features(df_clean_infer) if not df_clean_infer.empty else (None, None)
     
-    # Re-combine temporarily if we want to save the "processed" CSV 
-    # MLOps note: we save the engineered features + target here
-    df_processed = pd.concat([X_all, y_all], axis=1)
-    
-    # Save processed CSV
-    processed_path = Path("data/processed/clean.csv")
-    save_csv(df_processed, processed_path)
-    
-    # Fail-fast feature checks for explicitly configured columns
-    # In a later session, this will also use config instead of SETTINGS.
-    for col in SETTINGS["features"]["numeric_pipeline"]:
-        if col in df_processed.columns and not pd.api.types.is_numeric_dtype(df_processed[col]):
+    # Fail-fast feature checks for explicitly configured columns on train split
+    for col in numeric_pipeline:
+        if col in X_train.columns and not pd.api.types.is_numeric_dtype(X_train[col]):
             raise TypeError(f"Column '{col}' mapped for numeric_pipeline must be numeric.")
             
-    # 6. Train / Test Split
-    print("\n--- Train Test Split ---")
-    X = df_processed.drop(columns=[SETTINGS["target_column"]])
-    y = df_processed[SETTINGS["target_column"]]
-    
-    stratify_col = y if SETTINGS["problem_type"] == "classification" else None
-    
-    try:
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=0.2, random_state=42, stratify=stratify_col
-        )
-    except ValueError as e:
-        print(f"Stratified split failed ({e}). Falling back to unstratified split.")
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=0.2, random_state=42, stratify=None
-        )
-        
-    # 7. Build Feature Recipe
+    # 7. Build Feature Recipe (PreProcessor)
     print("\n--- Build Preprocessor ---")
     preprocessor = get_feature_preprocessor(
-        numeric_cols=SETTINGS["features"]["numeric_pipeline"],
-        categorical_cols=SETTINGS["features"]["categorical_pipeline"]
+        numeric_cols=numeric_pipeline,
+        categorical_cols=categorical_pipeline
     )
     
     # 8. Train Model
     print("\n--- Train Pipeline ---")
-    pipeline = train_model(X_train, y_train, preprocessor, config["model"])
+    pipeline = train_model(X_train, y_train, preprocessor, config.get("model", {}))
     
     # Save Model Artifact
-    model_path = Path("models/model.joblib")
+    model_path = models_dir / "model.joblib"
     save_model(pipeline, model_path)
     
     # 9. Evaluate
     print("\n--- Evaluate Model ---")
-    metrics = evaluate_model(pipeline, X_test, y_test, SETTINGS["problem_type"])
-    print(f"Evaluation Metrics: {metrics}")
+    if X_val is not None and len(X_val) > 0:
+        print("Evaluating on Validation Set:")
+        val_metrics = evaluate_model(pipeline, X_val, y_val, problem_type)
+        print(f"Val Metrics: {val_metrics}")
+        
+    if X_test is not None and len(X_test) > 0:
+        print("Evaluating on Test Set:")
+        test_metrics = evaluate_model(pipeline, X_test, y_test, problem_type)
+        print(f"Test Metrics: {test_metrics}")
     
-    # 10. Inference on test set (as an example of scoring new data)
+    # 10. Inference
     print("\n--- Run Inference ---")
-    # In a real environment, X_infer would be totally new unseen data
-    df_predictions = run_inference(pipeline, X_test)
-    
-    # Save Predictions Artifact
-    predictions_path = Path("reports/predictions.csv")
-    save_csv(df_predictions, predictions_path)
+    if X_infer is not None and len(X_infer) > 0:
+        predictions_path = reports_dir / "predictions.csv"
+        df_predictions = run_inference(pipeline, X_infer, save_path=str(predictions_path))
+    else:
+        print("No inference data provided in the split (seasons_infer). Skipping inference.")
     
     print("\n=== Pipeline Execution Complete ===")
 

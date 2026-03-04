@@ -62,3 +62,19 @@ evaluation:
     - log_loss
     - brier_score
   baseline_rule: "Predict the player with the higher ATP rank as the winner (win probability = 1.0 for higher ranked player, 0.0 for lower)."
+
+features:
+  numeric_pipeline:
+    - p1_rank
+    - p2_rank
+    - rank_diff
+    - age_diff
+    - ht_diff
+  categorical_pipeline:
+    - surface
+    - tourney_level
+    - round
+    - p1_hand
+    - p2_hand
+    
+problem_type: classification
