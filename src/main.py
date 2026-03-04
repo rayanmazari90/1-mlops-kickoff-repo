@@ -16,6 +16,7 @@ TODO: Any temporary or hardcoded variable or parameter will be imported from con
 
 import pandas as pd
 from pathlib import Path
+import yaml
 from sklearn.model_selection import train_test_split
 
 # Internal package imports
@@ -59,8 +60,27 @@ def main():
         
     # 2. Load
     print("\n--- Load Data ---")
-    raw_path = Path("data/raw/dummy_dataset.csv")
-    df_raw = load_raw_data(raw_path)
+    with open("config.yaml", "r") as f:
+        config = yaml.safe_load(f)
+        
+    dataset_cfg = config.get("dataset", {})
+    base_url = dataset_cfg.get("base_url")
+    
+    # Combine all seasons meant for the entire pipeline
+    # The split step will later separate train/val/test/infer using Date/Seasons
+    seasons = []
+    for split_type in ["seasons_train", "seasons_val", "seasons_test", "seasons_infer"]:
+        seasons.extend(dataset_cfg.get(split_type, []))
+        
+    paths_cfg = config.get("paths", {})
+    raw_dir = Path(paths_cfg.get("raw_dir", "data/raw"))
+    
+    df_raw = load_raw_data(
+        raw_dir=raw_dir,
+        base_url=base_url,
+        seasons=seasons,
+        download_if_missing=True
+    )
     
     # 3. Clean
     print("\n--- Clean Data ---")
