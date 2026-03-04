@@ -12,6 +12,9 @@ dependencies:
   - ipykernel
   - pytest
   - pytest-cov
+  - pyyaml
+  - python-dotenv
+  - requests
   - pip
   - pip:
     - pytest-cov # Test coverage reporting for code quality and completeness
