@@ -1,6 +1,6 @@
 # Tennis Match Outcome Prediction (ATP) – MLOps Pipeline
 
-**Author:** TODO_STUDENT (Group Name / Number)  
+**Authors:** `(GROUP 8)` Rayane Boumediene Mazari - Sacha Huberty - Shreya Jha - Smaragda Apostolou - Marco De Palma
 **Course:** MLOps (Master in Business Analytics and Data Science)  
 **Status:** Session 1 → Session N (Incremental delivery)
 
