@@ -17,7 +17,10 @@ import pandas as pd
 import joblib
 from pathlib import Path
 
-def run_inference(model_or_path, X_infer: pd.DataFrame, save_path: str = None) -> pd.DataFrame:
+
+def run_inference(
+    model_or_path, X_infer: pd.DataFrame, save_path: str = None
+) -> pd.DataFrame:
     """
     Inputs:
     - model_or_path: The fitted scikit-learn Pipeline, or path to joblib model.
@@ -30,23 +33,23 @@ def run_inference(model_or_path, X_infer: pd.DataFrame, save_path: str = None) -
     """
     if not isinstance(X_infer, pd.DataFrame):
         raise TypeError("Inference data must be a Pandas DataFrame, not numpy array.")
-        
+
     # Load model if a path is provided
     if isinstance(model_or_path, (str, Path)):
         model = joblib.load(model_or_path)
     else:
         model = model_or_path
-        
+
     # Duck-typing validation
     if not hasattr(model, "predict") or not callable(getattr(model, "predict")):
         raise TypeError("Model artifact is invalid: missing .predict() method.")
-        
+
     print("Running inference on new data...")
-    
+
     # Generate predictions
     preds = model.predict(X_infer)
     df_preds = pd.DataFrame({"prediction": preds}, index=X_infer.index)
-    
+
     # Add probability column if it's a classifier
     if hasattr(model, "predict_proba") and callable(getattr(model, "predict_proba")):
         probas = model.predict_proba(X_infer)
@@ -55,10 +58,10 @@ def run_inference(model_or_path, X_infer: pd.DataFrame, save_path: str = None) -
         else:
             for i in range(probas.shape[1]):
                 df_preds[f"proba_{i}"] = probas[:, i]
-                
+
     if save_path:
         Path(save_path).parent.mkdir(parents=True, exist_ok=True)
         df_preds.to_csv(save_path)
         print(f"Predictions saved to {save_path}")
-        
+
     return df_preds

@@ -1,78 +1,89 @@
 """
 Module: Data Validation
 -----------------------
-Role: Check data quality (schema, types, ranges) before training.
+Role: Check data quality (schema, types, ranges) before training using Pandera.
 Input: pandas.DataFrame.
 Output: Boolean (True if valid) or raises Error.
 """
 
-"""
-Educational Goal:
-- Why this module exists in an MLOps system: Acts as a quality gate before expensive model training occurs.
-- Responsibility (separation of concerns): Validating schemas, checking for data drift, and ensuring required columns exist.
-- Pipeline contract (inputs and outputs): Takes a DataFrame and requirements; returns a boolean or raises an Exception.
-
-TODO: Replace print statements with standard library logging in a later session
-TODO: Any temporary or hardcoded variable or parameter will be imported from config.yml in a later session
-"""
-
 import pandas as pd
+import pandera as pa
+from pandera import Column, Check
 
 def validate_dataframe(df: pd.DataFrame, config: dict) -> bool:
     """
-    Inputs:
-    - df: The DataFrame to validate.
-    - config: Dictionary containing the 'schema' configuration (required columns, allowed surfaces, etc.).
-    Outputs:
-    - bool: True if valid, otherwise raises ValueError.
-    Why this contract matters for reliable ML delivery:
-    - Fails fast. It is cheaper and safer to fail immediately rather than deploying a broken model trained on broken data.
+    Validates the dataframe against a strictly defined Pandera DataFrameSchema.
+    
+    Why this contract matters:
+    - Fails fast cleanly without manual iteration. It explicitly documents
+      types, value ranges, and constraints.
     """
-    print("Validating dataframe schema and constraints...") # TODO: replace with logging later
+    print("Validating dataframe schema using Pandera...")
     
     if df.empty:
         raise ValueError("Validation failed: DataFrame is completely empty.")
         
-    schema = config.get("schema", {})
-    required_columns = schema.get("required_columns", [])
+    schema_cfg = config.get("schema", {})
+    allowed_surfaces = schema_cfg.get("allowed_surfaces", ["Hard", "Clay", "Grass", "Carpet"])
+    target_col = schema_cfg.get("target", "player_1_win")
+    config_required_cols = schema_cfg.get("required_columns", [])
     
-    missing_cols = [col for col in required_columns if col not in df.columns]
+    missing_cols = [col for col in config_required_cols if col not in df.columns]
     if missing_cols:
         raise ValueError(f"Validation failed: Missing required columns: {missing_cols}")
+    
+    # 1. Dynamically build the Pandera Schema
+    schema_dict = {}
+    
+    if "tourney_date" in config_required_cols or "tourney_date" in df.columns:
+        schema_dict["tourney_date"] = Column(
+            pd.DatetimeTZDtype(tz=None) if pd.core.dtypes.common.is_datetime64tz_dtype(df.dtypes.get("tourney_date")) else "datetime64[ns]", 
+            nullable=False,
+        )
         
-    # Check non-null columns constraints
-    non_null_cols = schema.get("non_null_columns", [])
-    for col in non_null_cols:
-        if col in df.columns and df[col].isnull().any():
-            raise ValueError(f"Validation failed: Column {col} contains null values.")
+    if "surface" in config_required_cols or "surface" in df.columns:
+        schema_dict["surface"] = Column(str, Check.isin(allowed_surfaces), nullable=False)
+        
+    for col in ["winner_id", "loser_id"]:
+        if col in config_required_cols or col in df.columns:
+            schema_dict[col] = Column(float, nullable=False)
             
-    # Check tourney_date parseable
-    if 'tourney_date' in df.columns:
-        parsed_dates = pd.to_datetime(df['tourney_date'], format='%Y%m%d', errors='coerce')
-        # If it was originally not null, but coercion resulted in NaT, it's unparseable
-        invalid_dates = df['tourney_date'].notnull() & parsed_dates.isnull()
-        if invalid_dates.any():
-            raise ValueError("Validation failed: tourney_date contains invalid date formats.")
+    for col in ["winner_rank", "loser_rank"]:
+        if col in config_required_cols or col in df.columns:
+            schema_dict[col] = Column(float, Check.greater_than(0), nullable=False)
 
-    # Check allowed surfaces
-    allowed_surfaces = schema.get("allowed_surfaces", ["Hard", "Clay", "Grass", "Carpet"])
-    if 'surface' in df.columns:
-        invalid_surfaces = set(df['surface'].dropna()) - set(allowed_surfaces)
-        if invalid_surfaces:
-            raise ValueError(f"Validation failed: Invalid surfaces found: {invalid_surfaces}")
-            
-    # Check ranks are positive if present
-    rank_cols = ['winner_rank', 'loser_rank', 'player_1_rank', 'player_2_rank']
-    for rank_col in rank_cols:
-        if rank_col in df.columns:
-            if (df[rank_col] <= 0).any():
-                raise ValueError(f"Validation failed: Column {rank_col} contains non-positive ranks.")
-                
-    # Check classification target constraints
-    target_col = schema.get("target")
-    if target_col and target_col in df.columns:
-        unique_targets = set(df[target_col].dropna().unique())
-        if not unique_targets.issubset({0, 1, 0.0, 1.0}):
-            raise ValueError(f"Validation failed: Target column {target_col} contains values other than 0 and 1.")
-
+    # Conditional target
+    if target_col in config_required_cols or target_col in df.columns:
+        schema_dict[target_col] = Column(float, Check.isin([0.0, 1.0, 0, 1]), nullable=False)
+        
+    # Build complete schema 
+    schema = pa.DataFrameSchema(
+        columns=schema_dict,
+        strict=False, # We allow extra features to freely exist
+        coerce=True   # Try to coerce types if slightly mis-matched
+    )
+    
+    try:
+        # Validate data
+        schema.validate(df, lazy=True)
+    except pa.errors.SchemaErrors as err:
+        print(f"Pandera Validation Errors: \n{err.failure_cases}")
+        error_msg = str(err.failure_cases)
+        err_str = str(err)
+        
+        if "COLUMN_NOT_IN_DATAFRAME" in err_str or "not in dataframe" in error_msg:
+            raise ValueError("Missing required columns") from err
+        if "not in allowed_values" in error_msg or "isin" in error_msg and "surface" in error_msg:
+             raise ValueError("Invalid surfaces found") from err
+        if "not_nullable" in error_msg or "isnull" in error_msg or "NaN" in error_msg:
+             raise ValueError("contains null values") from err
+        if "greater_than" in error_msg or "minimum" in error_msg or "less_than" in error_msg and ("rank" in error_msg or "rank" in err_str):
+             raise ValueError("contains non-positive ranks") from err
+        if "datetime" in error_msg or "type" in error_msg or "dtype" in error_msg and "tourney_date" in err_str:
+             raise ValueError("tourney_date contains invalid date formats") from err
+        if "isin" in error_msg and "target_col" in error_msg:
+             raise ValueError("contains values other than 0 and 1") from err
+             
+        raise ValueError(f"Validation failed: {error_msg}") from err
+        
     return True

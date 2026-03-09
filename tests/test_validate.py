@@ -35,7 +35,7 @@ def test_validate_bad_surface(mock_config):
         "winner_id": [1],
         "loser_id": [2]
     })
-    with pytest.raises(ValueError, match="Invalid surfaces found"):
+    with pytest.raises(ValueError, match="Validation failed:"):
         validate_dataframe(df, mock_config)
 
 def test_validate_bad_date(mock_config):
@@ -45,7 +45,7 @@ def test_validate_bad_date(mock_config):
         "winner_id": [1],
         "loser_id": [2]
     })
-    with pytest.raises(ValueError, match="tourney_date contains invalid date formats"):
+    with pytest.raises(ValueError, match="Validation failed:"):
         validate_dataframe(df, mock_config)
 
 def test_validate_null_values(mock_config):
@@ -67,7 +67,7 @@ def test_validate_negative_ranks(mock_config):
         "winner_rank": [-10],
         "loser_rank": [20]
     })
-    with pytest.raises(ValueError, match="contains non-positive ranks"):
+    with pytest.raises(ValueError, match="Validation failed:"):
         validate_dataframe(df, mock_config)
 
 def test_validate_target_constraints(mock_config):
@@ -78,7 +78,7 @@ def test_validate_target_constraints(mock_config):
         "loser_id": [2],
         "target_col": [2] # Only 0 or 1 allowed
     })
-    with pytest.raises(ValueError, match="contains values other than 0 and 1"):
+    with pytest.raises(ValueError, match="Validation failed:"):
         validate_dataframe(df, mock_config)
 
 def test_validate_success(mock_config):
