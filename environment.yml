@@ -20,3 +20,5 @@ dependencies:
     - pytest-cov # Test coverage reporting for code quality and completeness
     - black # Code formatting to enforce style and readability
     - flake8 # Linting to check code for errors and best practices
+    - pandera
+    - mlflow

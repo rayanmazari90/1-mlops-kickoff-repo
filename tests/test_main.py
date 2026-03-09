@@ -3,6 +3,7 @@ import os
 import yaml
 import pandas as pd
 from pathlib import Path
+import mlflow
 
 from src.main import main
 
@@ -97,7 +98,11 @@ def test_main_pipeline(tmp_path):
         yaml.dump(dummy_config, f)
         
     # Execute the orchestrator
-    main(config_path=str(config_path))
+    try:
+        os.environ["MLFLOW_TRACKING_URI"] = f"sqlite:///{tmp_path}/mlruns.db"
+        main(config_path=str(config_path))
+    finally:
+        mlflow.end_run()
     
     # Assert artifacts are built
     processed_file = tmp_path / "data" / "processed" / "clean.csv"

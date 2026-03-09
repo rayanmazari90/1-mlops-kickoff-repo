@@ -12,6 +12,7 @@ import pandas as pd
 import joblib
 from pathlib import Path
 
+
 def load_csv(filepath: Path) -> pd.DataFrame:
     """
     Inputs:
@@ -21,8 +22,8 @@ def load_csv(filepath: Path) -> pd.DataFrame:
     Why this contract matters for reliable ML delivery:
     - Standardizes how we read tabular data, allowing us to swap backends (e.g., to Parquet) easily in the future.
     """
-    print(f"Loading CSV from {filepath}...") # TODO: replace with logging later
-    
+    print(f"Loading CSV from {filepath}...")  # TODO: replace with logging later
+
     # --------------------------------------------------------
     # START STUDENT CODE
     # --------------------------------------------------------
@@ -37,8 +38,9 @@ def load_csv(filepath: Path) -> pd.DataFrame:
     # --------------------------------------------------------
     # END STUDENT CODE
     # --------------------------------------------------------
-    
+
     return pd.read_csv(filepath)
+
 
 def save_csv(df: pd.DataFrame, filepath: Path) -> None:
     """
@@ -50,9 +52,9 @@ def save_csv(df: pd.DataFrame, filepath: Path) -> None:
     Why this contract matters for reliable ML delivery:
     - Ensures intermediate datasets are reliably persisted for debugging and auditability.
     """
-    print(f"Saving CSV to {filepath}...") # TODO: replace with logging later
+    print(f"Saving CSV to {filepath}...")  # TODO: replace with logging later
     filepath.parent.mkdir(parents=True, exist_ok=True)
-    
+
     # --------------------------------------------------------
     # START STUDENT CODE
     # --------------------------------------------------------
@@ -61,8 +63,9 @@ def save_csv(df: pd.DataFrame, filepath: Path) -> None:
     # --------------------------------------------------------
     # END STUDENT CODE
     # --------------------------------------------------------
-    
+
     df.to_csv(filepath, index=False)
+
 
 def save_model(model, filepath: Path) -> None:
     """
@@ -74,9 +77,9 @@ def save_model(model, filepath: Path) -> None:
     Why this contract matters for reliable ML delivery:
     - Allows us to separate the training compute environment from the inference compute environment.
     """
-    print(f"Saving model to {filepath}...") # TODO: replace with logging later
+    print(f"Saving model to {filepath}...")  # TODO: replace with logging later
     filepath.parent.mkdir(parents=True, exist_ok=True)
-    
+
     # --------------------------------------------------------
     # START STUDENT CODE
     # --------------------------------------------------------
@@ -84,8 +87,9 @@ def save_model(model, filepath: Path) -> None:
     # --------------------------------------------------------
     # END STUDENT CODE
     # --------------------------------------------------------
-    
+
     joblib.dump(model, filepath)
+
 
 def load_model(filepath: Path):
     """
@@ -96,8 +100,8 @@ def load_model(filepath: Path):
     Why this contract matters for reliable ML delivery:
     - Ensures the exact same model artifact evaluated in development is the one used in production.
     """
-    print(f"Loading model from {filepath}...") # TODO: replace with logging later
-    
+    print(f"Loading model from {filepath}...")  # TODO: replace with logging later
+
     # --------------------------------------------------------
     # START STUDENT CODE
     # --------------------------------------------------------
@@ -105,5 +109,5 @@ def load_model(filepath: Path):
     # --------------------------------------------------------
     # END STUDENT CODE
     # --------------------------------------------------------
-    
+
     return joblib.load(filepath)
