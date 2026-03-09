@@ -1,5 +1,4 @@
 import pandas as pd
-import pytest
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.compose import ColumnTransformer

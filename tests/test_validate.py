@@ -8,7 +8,12 @@ def mock_config():
     return {
         "schema": {
             "required_columns": ["tourney_date", "surface", "winner_id", "loser_id"],
-            "allowed_surfaces": ["Hard", "Clay", "Grass", "Carpet"],
+            "allowed_surfaces": [
+                "Hard",
+                "Clay",
+                "Grass",
+                "Carpet",
+            ],
             "non_null_columns": ["tourney_date", "winner_id", "loser_id"],
             "target": "target_col",
         }

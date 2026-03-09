@@ -4,22 +4,26 @@ Module: Evaluation
 Role: Generate metrics and plots for model performance.
 Input: Trained Model + Test Data.
 Output: Metrics dictionary and plots saved to `reports/`.
-"""
 
-"""
 Educational Goal:
-- Why this module exists in an MLOps system: Quantifies model performance on unseen data.
-- Responsibility (separation of concerns): Generating metrics to determine if the model is ready for deployment.
-- Pipeline contract (inputs and outputs): Takes a fitted model and test data, outputs an evaluation metric float.
+- Why this module exists in an MLOps system: Quantifies model performance
+  on unseen data.
+- Responsibility (separation of concerns): Generating metrics to determine
+  if the model is ready for deployment.
+- Pipeline contract (inputs and outputs): Takes a fitted model and test
+  data, outputs an evaluation metric float.
 
 TODO: Replace print statements with standard library logging in a later session
-TODO: Any temporary or hardcoded variable or parameter will be imported from config.yml in a later session
+TODO: Any temporary or hardcoded variable or parameter will be imported
+      from config.yml in a later session
 """
 
 import json
 from pathlib import Path
-import pandas as pd
+
+import mlflow
 import numpy as np
+import pandas as pd
 from sklearn.metrics import (
     mean_squared_error,
     log_loss,
@@ -27,7 +31,6 @@ from sklearn.metrics import (
     accuracy_score,
     roc_auc_score,
 )
-import mlflow
 
 
 def evaluate_model(
@@ -42,7 +45,8 @@ def evaluate_model(
     Outputs:
     - A dictionary representing multiple evaluation metrics.
     Why this contract matters for reliable ML delivery:
-    - Automated metrics allow CI/CD systems to block degraded models from reaching production automatically.
+    - Automated metrics allow CI/CD systems to block degraded models
+      from reaching production automatically.
     """
     print(
         "Evaluating model performance on test set..."
@@ -67,9 +71,8 @@ def evaluate_model(
             if probs.shape[1] == 2:
                 prob_pos = probs[:, 1]
             else:
-                prob_pos = probs[
-                    :, 0
-                ]  # Fallback although sklearn usually outputs class 0, class 1
+                # Fallback although sklearn usually outputs class 0, class 1
+                prob_pos = probs[:, 0]
         else:
             prob_pos = predictions.astype(
                 float
@@ -90,10 +93,12 @@ def evaluate_model(
             metrics["auc"] = None
 
         print(
-            f"Model Metrics - Log Loss: {metrics['log_loss']:.4f}, Brier: {metrics['brier_score']:.4f}, Acc: {metrics['accuracy']:.4f}"
+            f"Model Metrics - Log Loss: {metrics['log_loss']:.4f}, "
+            f"Brier: {metrics['brier_score']:.4f}, "
+            f"Acc: {metrics['accuracy']:.4f}"
         )
 
-        # Baseline Implementation: Predict player with higher ATP rank (lower rank number)
+        # Baseline: Predict player with higher ATP rank (lower rank number)
         # We need p1_rank and p2_rank in X_test for this.
         if "p1_rank" in X_test.columns and "p2_rank" in X_test.columns:
             print("Evaluating baseline (higher rank wins)...")
@@ -119,7 +124,9 @@ def evaluate_model(
                 metrics["baseline_auc"] = None
 
             print(
-                f"Baseline Metrics - Log Loss: {metrics['baseline_log_loss']:.4f}, Brier: {metrics['baseline_brier_score']:.4f}, Acc: {metrics['baseline_accuracy']:.4f}"
+                f"Baseline Metrics - Log Loss: {metrics['baseline_log_loss']:.4f}, "
+                f"Brier: {metrics['baseline_brier_score']:.4f}, "
+                f"Acc: {metrics['baseline_accuracy']:.4f}"
             )
     else:
         raise ValueError("problem_type must be 'regression' or 'classification'")

@@ -4,18 +4,20 @@ Module: Inference
 Role: Make predictions on new, unseen data.
 Input: Trained Model + New Data.
 Output: Predictions (Array or DataFrame).
-"""
 
-"""
 Educational Goal:
-- Why this module exists in an MLOps system: Applies the trained model to new, unseen data to generate business value.
-- Responsibility (separation of concerns): Loading the pipeline and making predictions on strictly formatted inference data.
-- Pipeline contract (inputs and outputs): Takes a fitted model and new data, outputs a DataFrame of predictions matching the input index.
+- Why this module exists in an MLOps system: Applies the trained model to
+  new, unseen data to generate business value.
+- Responsibility (separation of concerns): Loading the pipeline and making
+  predictions on strictly formatted inference data.
+- Pipeline contract (inputs and outputs): Takes a fitted model and new data,
+  outputs a DataFrame of predictions matching the input index.
 """
 
-import pandas as pd
 import joblib
 from pathlib import Path
+
+import pandas as pd
 
 
 def run_inference(
@@ -27,9 +29,11 @@ def run_inference(
     - X_infer: The feature DataFrame for generating new predictions.
     - save_path: Optional path to save predictions.
     Outputs:
-    - A pd.DataFrame containing exactly one column named 'prediction', preserving the original index.
+    - A pd.DataFrame containing exactly one column named 'prediction',
+      preserving the original index.
     Why this contract matters for reliable ML delivery:
-    - A strict output format ensures downstream engineering systems (like dashboards or databases) can seamlessly consume predictions.
+    - A strict output format ensures downstream engineering systems
+      (like dashboards or databases) can seamlessly consume predictions.
     """
     if not isinstance(X_infer, pd.DataFrame):
         raise TypeError("Inference data must be a Pandas DataFrame, not numpy array.")

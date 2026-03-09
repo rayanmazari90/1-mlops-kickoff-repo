@@ -1,7 +1,7 @@
-import pytest
 import pandas as pd
-import numpy as np
+import pytest
 from sklearn.exceptions import NotFittedError
+
 from src.features import build_features, get_feature_preprocessor
 
 
@@ -29,7 +29,7 @@ def sample_clean_df():
 
 
 def test_build_features_shapes(sample_clean_df):
-    """Verify that build_features returns X and y of the exact same length as the input"""
+    """Verify build_features returns X and y of same length as input"""
     original_len = len(sample_clean_df)
     X, y = build_features(sample_clean_df)
 
@@ -39,7 +39,7 @@ def test_build_features_shapes(sample_clean_df):
 
 
 def test_build_features_no_leakage(sample_clean_df):
-    """Verify that build_features drops all direct winner/loser columns (including IDs)"""
+    """Verify build_features drops all direct winner/loser columns (incl. IDs)"""
     X, y = build_features(sample_clean_df)
 
     # Assert IDs are gone
@@ -52,12 +52,12 @@ def test_build_features_no_leakage(sample_clean_df):
     for col in X.columns:
         assert not col.startswith("winner_"), f"Leakage column found: {col}"
         assert not col.startswith("loser_"), f"Leakage column found: {col}"
-        assert not col.startswith("w_"), f"Possible match stat leakage found: {col}"
-        assert not col.startswith("l_"), f"Possible match stat leakage found: {col}"
+        assert not col.startswith("w_"), f"Leakage: {col}"
+        assert not col.startswith("l_"), f"Leakage: {col}"
 
 
 def test_build_features_symmetric_construction(sample_clean_df):
-    """Verify that p1/p2 features are created correctly and difference is computed"""
+    """Verify p1/p2 features are created correctly and difference computed"""
     X, y = build_features(sample_clean_df)
 
     expected_cols = [

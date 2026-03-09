@@ -1,12 +1,16 @@
-import pytest
-import pandas as pd
-from pathlib import Path
 from unittest.mock import patch
+
+import pandas as pd
+import pytest
+
 from src.load_data import load_raw_data
 
 
 def test_load_raw_data_success_local_files(tmp_path):
-    """Test that existing local files are loaded and concatenated successfully without downloading."""
+    """
+    Test existing local files are loaded
+    and concatenated without download.
+    """
     raw_dir = tmp_path / "data" / "raw"
     raw_dir.mkdir(parents=True)
 
@@ -43,7 +47,7 @@ def test_load_raw_data_success_local_files(tmp_path):
 
 
 def test_load_raw_data_missing_file_no_download(tmp_path):
-    """Test that missing files raise FileNotFoundError when download_if_missing is False."""
+    """Test missing files raise FileNotFoundError when download disabled."""
     raw_dir = tmp_path / "data" / "raw"
     raw_dir.mkdir(parents=True)
 
@@ -58,7 +62,10 @@ def test_load_raw_data_missing_file_no_download(tmp_path):
 
 @patch("src.load_data.urllib.request.urlretrieve")
 def test_load_raw_data_download_if_missing(mock_urlretrieve, tmp_path):
-    """Test that downloading triggers urllib and correctly loads the new file."""
+    """
+    Test that downloading triggers
+    urllib and correctly loads the new file.
+    """
     raw_dir = tmp_path / "data" / "raw"
     raw_dir.mkdir(parents=True)
 
@@ -77,6 +84,6 @@ def test_load_raw_data_download_if_missing(mock_urlretrieve, tmp_path):
     )
 
     assert len(df_combined) == 1
-    mock_urlretrieve.assert_called_once_with(
-        "http://fake-url.com/atp_matches_2020.csv", raw_dir / "atp_matches_2020.csv"
-    )
+    expected_url = "http://fake-url.com/atp_matches_2020.csv"
+    expected_path = raw_dir / "atp_matches_2020.csv"
+    mock_urlretrieve.assert_called_once_with(expected_url, expected_path)

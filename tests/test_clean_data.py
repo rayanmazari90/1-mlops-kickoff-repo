@@ -1,4 +1,3 @@
-import pytest
 import pandas as pd
 import numpy as np
 from src.clean_data import clean_dataframe

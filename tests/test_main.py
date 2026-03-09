@@ -1,9 +1,8 @@
-import pytest
 import os
-import yaml
-import pandas as pd
-from pathlib import Path
+
 import mlflow
+import pandas as pd
+import yaml
 
 from src.main import main
 
@@ -117,7 +116,8 @@ def test_main_pipeline(tmp_path):
         },
         "split": {"strategy": "seasons"},
         "model": {
-            "algorithm": "LogisticRegression",  # Use LR since RF requires many samples
+            "algorithm": "LogisticRegression",
+            # Use LR since RF requires many samples
             "hyperparams": {},
             "random_seed": 42,
         },

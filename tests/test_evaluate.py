@@ -1,8 +1,9 @@
 import json
-import pytest
-import pandas as pd
+
 import numpy as np
-from pathlib import Path
+import pandas as pd
+import pytest
+
 from src.evaluate import evaluate_model
 import mlflow
 
@@ -54,7 +55,8 @@ def test_evaluate_model_classification(mock_classification_data, tmp_path, monke
     for k in expected_keys:
         assert k in metrics, f"Missing metric key: {k}"
 
-    # Assert metrics are floats (or None for AUC if undefined, but here defined)
+    # Assert metrics are floats
+    # (or None for AUC if undefined, but here defined)
     for k, v in metrics.items():
         assert isinstance(v, float) or v is None
 
@@ -85,7 +87,7 @@ def test_evaluate_model_missing_rank_columns():
     y_test = pd.Series([1, 0, 1])
     model = MockModel()
 
-    # Just setting predict, predict_proba doesn't need 'p1_rank' here just returning dummies
+    # predict_proba doesn't need 'p1_rank' here, just returning dummies
     model.predict = lambda X: np.array([1, 0, 1])
     model.predict_proba = lambda X: np.array([[0.1, 0.9], [0.8, 0.2], [0.3, 0.7]])
 
@@ -93,4 +95,5 @@ def test_evaluate_model_missing_rank_columns():
         metrics = evaluate_model(model, X_test, y_test, "classification")
 
     assert "log_loss" in metrics
-    assert "baseline_accuracy" not in metrics  # Should skip baseline logic silently
+    assert "baseline_accuracy" not in metrics
+    # Should skip baseline logic silently

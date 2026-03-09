@@ -1,8 +1,6 @@
-import pytest
-import pandas as pd
 from pathlib import Path
+import pandas as pd
 from sklearn.linear_model import LogisticRegression
-import joblib
 
 from src.utils import load_csv, save_csv, save_model, load_model
 

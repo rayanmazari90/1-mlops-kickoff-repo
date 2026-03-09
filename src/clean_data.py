@@ -4,16 +4,18 @@ Module: Data Cleaning
 Role: Preprocessing, missing value imputation, and feature engineering.
 Input: pandas.DataFrame (Raw).
 Output: pandas.DataFrame (Processed/Clean).
-"""
 
-"""
 Educational Goal:
-- Why this module exists in an MLOps system: Standardizes data cleaning separately from feature engineering.
-- Responsibility (separation of concerns): Handling missing values, standardizing formats, and removing pure noise.
-- Pipeline contract (inputs and outputs): Takes a raw DataFrame, outputs a cleaned DataFrame ready for split and feature engineering.
+- Why this module exists in an MLOps system: Standardizes data cleaning
+  separately from feature engineering.
+- Responsibility (separation of concerns): Handling missing values,
+  standardizing formats, and removing pure noise.
+- Pipeline contract (inputs and outputs): Takes a raw DataFrame, outputs
+  a cleaned DataFrame ready for split and feature engineering.
 
 TODO: Replace print statements with standard library logging in a later session
-TODO: Any temporary or hardcoded variable or parameter will be imported from config.yml in a later session
+TODO: Any temporary or hardcoded variable or parameter will be imported
+      from config.yml in a later session
 """
 
 import pandas as pd
@@ -27,7 +29,8 @@ def clean_dataframe(df_raw: pd.DataFrame, target_column: str) -> pd.DataFrame:
     Outputs:
     - pd.DataFrame containing the cleaned data.
     Why this contract matters for reliable ML delivery:
-    - Prevents pipeline crashes caused by corrupt data and enforces a consistent state before modeling.
+    - Prevents pipeline crashes caused by corrupt data and enforces
+      a consistent state before modeling.
     """
     print("Cleaning raw dataframe...")  # TODO: replace with logging later
 
@@ -57,7 +60,7 @@ def clean_dataframe(df_raw: pd.DataFrame, target_column: str) -> pd.DataFrame:
         # Drop any dates that failed to parse (NaT)
         df_clean = df_clean.dropna(subset=["tourney_date"])
 
-    # Handle missing ranks by imputing with an explicit rule (e.g., 999999 for unranked players)
+    # Handle missing ranks by imputing with explicit rule (999999 for unranked)
     for col in ["winner_rank", "loser_rank"]:
         if col in df_clean.columns:
             df_clean[col] = df_clean[col].fillna(999999.0)

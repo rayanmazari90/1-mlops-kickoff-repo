@@ -1,35 +1,38 @@
 """
 Module: Main Pipeline
 ---------------------
-Role: Orchestrate the entire flow (Load -> Clean -> Validate -> Train -> Evaluate).
+Role: Orchestrate the entire flow (Load -> Clean -> Validate -> Train ->
+      Evaluate).
 Usage: python -m src.main
-"""
 
-"""
 Educational Goal:
-- Why this module exists in an MLOps system: The orchestrator script that ties all components together.
-- Responsibility (separation of concerns): Defining execution order, passing data between modules, and configuration management.
-- Pipeline contract (inputs and outputs): Execution entry point that reads configuration and orchestrates artifacts.
+- Why this module exists in an MLOps system: The orchestrator script that
+  ties all components together.
+- Responsibility (separation of concerns): Defining execution order,
+  passing data between modules, and configuration management.
+- Pipeline contract (inputs and outputs): Execution entry point that reads
+  configuration and orchestrates artifacts.
 
 TODO: Replace print statements with standard library logging in a later session
-TODO: Any temporary or hardcoded variable or parameter will be imported from config.yml in a later session
+TODO: Any temporary or hardcoded variable or parameter will be imported
+      from config.yml in a later session
 """
 
-import pandas as pd
-from pathlib import Path
-import yaml
-import mlflow
 import os
+from pathlib import Path
 
-# Internal package imports
-from src.utils import save_csv, save_model
-from src.load_data import load_raw_data
+import mlflow
+import pandas as pd
+import yaml
+
 from src.clean_data import clean_dataframe
-from src.validate import validate_dataframe
-from src.features import get_feature_preprocessor, build_features
-from src.train import train_model
 from src.evaluate import evaluate_model
+from src.features import build_features, get_feature_preprocessor
 from src.infer import run_inference
+from src.load_data import load_raw_data
+from src.train import train_model
+from src.utils import save_csv, save_model
+from src.validate import validate_dataframe
 
 
 def main(config_path: str = "config.yaml"):
@@ -48,7 +51,8 @@ def main(config_path: str = "config.yaml"):
     config_str = yaml.dump(config)
     if "TODO" in config_str or "CHANGEME" in config_str:
         raise ValueError(
-            "Configuration contains unresolved placeholders (TODO/CHANGEME). Please configure them properly."
+            "Configuration contains unresolved placeholders (TODO/CHANGEME). "
+            "Please configure them properly."
         )
 
     # Extract config variables
@@ -78,7 +82,12 @@ def main(config_path: str = "config.yaml"):
 
     # Combine all seasons for fetching data
     seasons = []
-    for split_type in ["seasons_train", "seasons_val", "seasons_test", "seasons_infer"]:
+    for split_type in [
+        "seasons_train",
+        "seasons_val",
+        "seasons_test",
+        "seasons_infer",
+    ]:
         seasons.extend(dataset_cfg.get(split_type, []))
 
     if not seasons:
@@ -117,7 +126,8 @@ def main(config_path: str = "config.yaml"):
                 df_clean["tourney_date"], format="mixed"
             ).dt.year
         else:
-            # Fallback if tourney_date not available (should be due to validation)
+            # Fallback if tourney_date not available
+            # (should be due to validation)
             raise ValueError("tourney_date column missing from cleaned dataframe!")
 
         df_clean_train = df_clean[
@@ -154,13 +164,15 @@ def main(config_path: str = "config.yaml"):
             build_features(df_clean_infer) if not df_clean_infer.empty else (None, None)
         )
 
-        # Fail-fast feature checks for explicitly configured columns on train split
+        # Fail-fast feature checks for explicitly configured columns
+        # on train split
         for col in numeric_pipeline:
             if col in X_train.columns and not pd.api.types.is_numeric_dtype(
                 X_train[col]
             ):
                 raise TypeError(
-                    f"Column '{col}' mapped for numeric_pipeline must be numeric."
+                    f"""Column '{col}' mapped for numeric_pipeline
+                    must be numeric."""
                 )
 
         # 7. Build Feature Recipe (PreProcessor)

@@ -1,26 +1,28 @@
 """
 Module: Model Training
 ----------------------
-Role: Bundle preprocessing and algorithms into a single Pipeline and fit on training data.
+Role: Bundle preprocessing and algorithms into a single Pipeline and fit
+      on training data.
 Input: pandas.DataFrame (Processed) + ColumnTransformer (Recipe).
 Output: Serialized scikit-learn Pipeline in `models/`.
-"""
 
-"""
 Educational Goal:
-- Why this module exists in an MLOps system: Isolates the model training logic from data processing.
-- Responsibility (separation of concerns): Fitting the full Pipeline (preprocessor + model) on training data.
-- Pipeline contract (inputs and outputs): Takes training data and an unfitted preprocessor, outputs a fitted Pipeline.
+- Why this module exists in an MLOps system: Isolates the model training
+  logic from data processing.
+- Responsibility (separation of concerns): Fitting the full Pipeline
+  (preprocessor + model) on training data.
+- Pipeline contract (inputs and outputs): Takes training data and an
+  unfitted preprocessor, outputs a fitted Pipeline.
 
 TODO: Replace print statements with standard library logging in a later session
-TODO: Any temporary or hardcoded variable or parameter will be imported from config.yml in a later session
+TODO: Any temporary or hardcoded variable or parameter will be imported
+      from config.yml in a later session
 """
 
-import pandas as pd
-from sklearn.pipeline import Pipeline
 import mlflow
 import mlflow.sklearn
-from sklearn.linear_model import Ridge, LogisticRegression
+import pandas as pd
+from sklearn.pipeline import Pipeline
 
 
 def train_model(
@@ -35,7 +37,8 @@ def train_model(
     Outputs:
     - A fully fitted scikit-learn Pipeline.
     Why this contract matters for reliable ML delivery:
-    - Bundling the preprocessor and model into a single Pipeline guarantees exact reproduction of logic during inference.
+    - Bundling the preprocessor and model into a single Pipeline guarantees
+      exact reproduction of logic during inference.
     """
     algorithm_name = model_config.get("algorithm", "LogisticRegression")
     print(

@@ -15,6 +15,12 @@ venv/
 .coverage
 dist/
 build/
+*.egg-info/
+
+# MLflow
+mlflow.db
+mlruns.db
+mlruns/
 
 # OS and IDE
 .DS_Store

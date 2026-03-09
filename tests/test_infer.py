@@ -1,7 +1,7 @@
-import pytest
-import pandas as pd
 import joblib
-from pathlib import Path
+import pandas as pd
+import pytest
+
 from src.infer import run_inference
 
 
@@ -64,7 +64,8 @@ def test_run_inference_standalone(tmp_path):
     df = pd.DataFrame({"a": [1, 2]})
     output_path = tmp_path / "predictions.csv"
 
-    # We alter run_inference to support loading model from path and saving output
+    # We alter run_inference to support loading
+    # model from path and saving output
     df_preds = run_inference(str(model_path), df, save_path=str(output_path))
 
     assert "prediction" in df_preds.columns

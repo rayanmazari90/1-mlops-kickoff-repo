@@ -1,27 +1,31 @@
 """
 Module: Feature Engineering
 ---------------------------
-Role: Define the transformation "recipe" (binning, encoding, scaling) to be bundled with the model.
+Role: Define the transformation "recipe" (binning, encoding, scaling)
+      to be bundled with the model.
 Input: Configuration (lists of column names).
 Output: scikit-learn ColumnTransformer object.
-"""
 
-"""
 Educational Goal:
-- Why this module exists in an MLOps system: Encapsulates all mathematical transformations into a deployable artifact.
-- Responsibility (separation of concerns): Building a transformation recipe (not applying it directly to data here).
-- Pipeline contract (inputs and outputs): Takes configuration lists, outputs an unfitted scikit-learn ColumnTransformer.
+- Why this module exists in an MLOps system: Encapsulates all mathematical
+  transformations into a deployable artifact.
+- Responsibility (separation of concerns): Building a transformation recipe
+  (not applying it directly to data here).
+- Pipeline contract (inputs and outputs): Takes configuration lists, outputs
+  an unfitted scikit-learn ColumnTransformer.
 
 TODO: Replace print statements with standard library logging in a later session
-TODO: Any temporary or hardcoded variable or parameter will be imported from config.yml in a later session
+TODO: Any temporary or hardcoded variable or parameter will be imported
+      from config.yml in a later session
 """
 
-import pandas as pd
-import numpy as np
 from typing import Optional, List, Tuple
+
+import numpy as np
+import pandas as pd
 from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
+from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 
 
@@ -38,9 +42,8 @@ def build_features(df_clean: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Series]:
     df_features = df_clean.copy()
 
     # 1. Randomly decide if winner is p1 or p2 for each row
-    rng = np.random.default_rng(
-        42
-    )  # Ensure determinism for reproducibility via localized generator
+    # Ensure determinism for reproducibility via localized generator
+    rng = np.random.default_rng(42)
     is_winner_p1 = rng.random(len(df_features)) > 0.5
 
     # 2. Extract features without leakage
@@ -87,9 +90,8 @@ def build_features(df_clean: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Series]:
     # The target: Did player 1 win?
     y = pd.Series(is_winner_p1.astype(int), name="player_1_win")
 
-    # Context features that apply to the whole match are preserved: surface, tourney_level, round
-
-    # Drop all raw winner/loser specific columns to perfectly guarantee no leakage
+    # Context features preserved: surface, tourney_level, round
+    # Drop raw winner/loser columns to guarantee no leakage
     leakage_cols = [
         c
         for c in df_features.columns
@@ -100,13 +102,15 @@ def build_features(df_clean: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Series]:
     ]
     df_features = df_features.drop(columns=leakage_cols)
 
-    # Ensure ID columns are dropped if they exist as they are not predictive features
+    # Ensure ID columns are dropped if they exist
+    # as they are not predictive features
     id_cols = ["tourney_id", "match_num"]
     df_features = df_features.drop(
         columns=[c for c in id_cols if c in df_features.columns]
     )
 
-    # Date should also not be passed directly to the model as a numeric/categorical
+    # Date should also not be passed directly to
+    # the model as a numeric/categorical
     if "tourney_date" in df_features.columns:
         df_features = df_features.drop(columns=["tourney_date"])
 
@@ -124,11 +128,13 @@ def get_feature_preprocessor(
     """
     Inputs:
     - numeric_cols: List of numeric columns to impute and scale.
-    - categorical_cols: List of categorical columns to impute and one-hot encode.
+    - categorical_cols: List of categorical columns to impute and
+    one-hot encode.
     Outputs:
     - An unfitted scikit-learn ColumnTransformer.
     Why this contract matters for reliable ML delivery:
-    - Prevents data leakage by ensuring transformations are fitted ONLY on training data, then seamlessly applied to test/production data.
+    - Prevents data leakage by ensuring transformations are fitted ONLY on
+      training data, then seamlessly applied to test/production data.
     """
     print(
         "Building feature engineering ColumnTransformer recipe..."
@@ -159,7 +165,8 @@ def get_feature_preprocessor(
 
     preprocessor = ColumnTransformer(
         transformers=transformers,
-        remainder="drop",  # Unspecified columns get dropped at transformation time
+        remainder="drop",
+        # Unspecified columns get dropped at transformation time
     )
 
     return preprocessor
