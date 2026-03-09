@@ -68,7 +68,12 @@ This project follows a strict separation between "Sandbox" (Notebooks) and "Prod
 ├── README.md
 ├── environment.yml
 ├── config.yaml
+├── pyproject.toml           # Package configuration (local installations)
 ├── .env
+│
+├── .github/
+│   └── workflows/
+│       └── ci.yml           # CI/CD Automation (Black, Flake8, Pytest)
 │
 ├── notebooks/
 │   └── baseline_eda.ipynb
@@ -77,21 +82,22 @@ This project follows a strict separation between "Sandbox" (Notebooks) and "Prod
 │   ├── __init__.py
 │   ├── load_data.py         # Download/read ATP seasons -> raw df
 │   ├── clean_data.py        # Clean + standardize + select columns
-│   ├── validate.py          # Quality gate (schema + domain checks)
+│   ├── validate.py          # Quality gate (Pandera DataFrame schemas)
 │   ├── features.py          # Build feature recipe (no leakage, fit on Train)
-│   ├── train.py             # Train model pipeline + save artifact
-│   ├── evaluate.py          # Compute metrics + save report
+│   ├── train.py             # Train model pipeline + save artifact (MLflow tracked)
+│   ├── evaluate.py          # Compute metrics + save report (MLflow tracked)
 │   ├── infer.py             # Predict on “new” matches + save output
 │   ├── utils.py             # IO helpers, logging helpers, etc.
-│   └── main.py              # Orchestrator
+│   └── main.py              # Orchestrator (MLflow context initialized)
 │
 ├── data/
 │   ├── raw/
 │   └── processed/
 │
-├── models/
-├── reports/
-└── tests/
+├── models/                  # Joblib models cache
+├── reports/                 # Static exports (predictions, offline metrics)
+├── tests/                   # Pytest suite
+└── mlruns/                  # MLflow tracking telemetry
 ```
 
 ---
@@ -104,6 +110,9 @@ The pipeline enforces standard artifacts generated on every successful run:
 - `reports/predictions.csv`
 - Evaluation reports (e.g., `reports/metrics.json` or `.txt`)
 
+### MLOps Telemetry
+- `mlruns.db`: MLflow SQLite tracking database containing experiment parameters, recorded metrics, and serialized model files.
+
 ---
 
 ## 7. How to Run & Test
@@ -115,12 +124,26 @@ python -m src.main
 
 Run unit tests to ensure all modules are working perfectly:
 ```bash
-python -m pytest -q
+pytest
+```
+
+Start the MLflow UI to view experiment tracking and model metrics:
+```bash
+mlflow ui --backend-store-uri sqlite:///mlruns.db
 ```
 
 ---
 
-## 8. Team Split Suggestion
+## 8. Industry-Level Polish Features 🏆
+- **Data Validation:** Strict declarative data contracts implemented using `pandera`.
+- **Experiment Tracking:** Hyperparameters, evaluation metrics, and model artifacts logged locally via `mlflow`.
+- **Concurrency & Reproducibility:** Global random seeds replaced with thread-safe `np.random.default_rng(42)`.
+- **Testing:** 33 comprehensive `pytest` assertions simulating the entire pipeline operation natively.
+- **CI/CD:** Automated code formatting (`black`), linting (`flake8`), and testing workflows triggered on GitHub Actions.
+
+---
+
+## 9. Team Split Suggestion
 To distribute the workload reasonably across teams, we suggest assigning each member ~2 code modules and their corresponding tests:
 - **Member 1**: `load_data.py`, `clean_data.py` + tests
 - **Member 2**: `validate.py`, `features.py` + tests
