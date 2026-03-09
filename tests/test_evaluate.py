@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 from src.evaluate import evaluate_model
+import mlflow
 
 class MockModel:
     def predict(self, X):
@@ -36,7 +37,8 @@ def test_evaluate_model_classification(mock_classification_data, tmp_path, monke
     X_test, y_test = mock_classification_data
     model = MockModel()
 
-    metrics = evaluate_model(model, X_test, y_test, "classification")
+    with mlflow.start_run():
+        metrics = evaluate_model(model, X_test, y_test, "classification")
 
     # Assert dictionary keys exist
     expected_keys = [
@@ -80,7 +82,8 @@ def test_evaluate_model_missing_rank_columns():
     model.predict = lambda X: np.array([1, 0, 1])
     model.predict_proba = lambda X: np.array([[0.1, 0.9], [0.8, 0.2], [0.3, 0.7]])
     
-    metrics = evaluate_model(model, X_test, y_test, "classification")
+    with mlflow.start_run():
+        metrics = evaluate_model(model, X_test, y_test, "classification")
     
     assert "log_loss" in metrics
     assert "baseline_accuracy" not in metrics # Should skip baseline logic silently
