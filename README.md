@@ -72,9 +72,6 @@ This project follows a strict separation between "Sandbox" (Notebooks) and "Prod
 ├── pyproject.toml           # Package configuration (local installations)
 ├── .env
 │
-├── .github/
-│   └── workflows/
-│       └── ci.yml           # CI/CD Automation (Black, Flake8, Pytest)
 │
 ├── notebooks/
 │   └── baseline_eda.ipynb

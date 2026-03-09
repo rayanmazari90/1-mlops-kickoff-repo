@@ -50,11 +50,3 @@ reports/**
 # Python cache
 __pycache__/
 *.pyc
-
-# MLflow
-mlruns/
-mlruns.db
-mlflow.db
-
-# Packages
-*.egg-info/
