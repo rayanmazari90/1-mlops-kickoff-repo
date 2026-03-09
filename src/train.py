@@ -18,9 +18,14 @@ TODO: Any temporary or hardcoded variable or parameter will be imported from con
 
 import pandas as pd
 from sklearn.pipeline import Pipeline
+import mlflow
+import mlflow.sklearn
 from sklearn.linear_model import Ridge, LogisticRegression
 
-def train_model(X_train: pd.DataFrame, y_train: pd.Series, preprocessor, model_config: dict):
+
+def train_model(
+    X_train: pd.DataFrame, y_train: pd.Series, preprocessor, model_config: dict
+):
     """
     Inputs:
     - X_train: The feature DataFrame for training.
@@ -33,37 +38,48 @@ def train_model(X_train: pd.DataFrame, y_train: pd.Series, preprocessor, model_c
     - Bundling the preprocessor and model into a single Pipeline guarantees exact reproduction of logic during inference.
     """
     algorithm_name = model_config.get("algorithm", "LogisticRegression")
-    print(f"Training Pipeline for algorithm: {algorithm_name}...") # TODO: replace with logging later
-    
+    print(
+        f"Training Pipeline for algorithm: {algorithm_name}..."
+    )  # TODO: replace with logging later
+
     # --------------------------------------------------------
     # START STUDENT CODE
     # --------------------------------------------------------
     hyperparams = model_config.get("hyperparams", {})
     random_seed = model_config.get("random_seed", 42)
-    
+
     if algorithm_name == "LogisticRegression":
         from sklearn.linear_model import LogisticRegression
+
         estimator = LogisticRegression(random_state=random_seed, **hyperparams)
     elif algorithm_name == "RandomForestClassifier":
         from sklearn.ensemble import RandomForestClassifier
+
         estimator = RandomForestClassifier(random_state=random_seed, **hyperparams)
     elif algorithm_name == "XGBClassifier":
         from xgboost import XGBClassifier
+
         estimator = XGBClassifier(random_state=random_seed, **hyperparams)
     elif algorithm_name == "Ridge":
         from sklearn.linear_model import Ridge
+
         estimator = Ridge(random_state=random_seed, **hyperparams)
     else:
         raise ValueError(f"Algorithm {algorithm_name} is not explicitly supported yet.")
     # --------------------------------------------------------
     # END STUDENT CODE
     # --------------------------------------------------------
-    
-    pipeline = Pipeline([
-        ("preprocess", preprocessor),
-        ("model", estimator)
-    ])
-    
+
+    pipeline = Pipeline([("preprocess", preprocessor), ("model", estimator)])
+
     pipeline.fit(X_train, y_train)
+
+    # MLflow Tracking
+    mlflow.log_param("algorithm", algorithm_name)
+    mlflow.log_params(hyperparams)
+    mlflow.log_param("random_seed", random_seed)
     
+    # Log the full sklearn pipeline using mlflow's flavor
+    mlflow.sklearn.log_model(pipeline, artifact_path="model")
+
     return pipeline

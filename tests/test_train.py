@@ -3,6 +3,7 @@ import pytest
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.compose import ColumnTransformer
+import mlflow
 
 from src.train import train_model
 
@@ -27,7 +28,8 @@ def test_train_model_creates_pipeline():
     }
     
     # Act
-    pipeline = train_model(X_train, y_train, preprocessor, model_config)
+    with mlflow.start_run():
+        pipeline = train_model(X_train, y_train, preprocessor, model_config)
     
     # Assert
     assert isinstance(pipeline, Pipeline)
