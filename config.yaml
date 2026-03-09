@@ -1,10 +1,80 @@
-# MLOps Project Configuration
-# This file will eventually control paths, hyperparameters, and toggles.
+paths:
+  raw_dir: data/raw
+  processed_dir: data/processed
+  models_dir: models
+  reports_dir: reports
 
-data:
-  raw: "data/raw/dataset.csv"
-  processed: "data/processed/clean.csv"
+dataset:
+  base_url: https://raw.githubusercontent.com/JeffSackmann/tennis_atp/master/
+  seasons_train:
+    - 2018
+    - 2019
+    - 2020
+  seasons_val:
+    - 2021
+  seasons_test:
+    - 2022
+  seasons_infer:
+    - 2023
 
-train:
-  test_size: 0.2
-  seed: 42
+schema:
+  required_columns:
+    - tourney_date
+    - surface
+    - winner_id
+    - winner_seed
+    - winner_rank
+    - winner_hand
+    - winner_ht
+    - winner_age
+    - loser_id
+    - loser_seed
+    - loser_rank
+    - loser_hand
+    - loser_ht
+    - loser_age
+  allowed_surfaces:
+    - Hard
+    - Clay
+    - Grass
+  target: player_1_win
+  non_null_columns:
+    - tourney_date
+    - surface
+    - winner_id
+    - loser_id
+    - winner_rank
+    - loser_rank
+
+split:
+  strategy: seasons
+
+model:
+  algorithm: RandomForestClassifier
+  hyperparams:
+    n_estimators: 100
+    max_depth: 5
+    min_samples_split: 10
+  random_seed: 42
+
+evaluation:
+  metrics:
+    - log_loss
+    - brier_score
+  baseline_rule: "Predict the player with the higher ATP rank as the winner (win probability = 1.0 for higher ranked player, 0.0 for lower)."
+
+features:
+  numeric_pipeline:
+    - p1_rank
+    - p2_rank
+    - rank_diff
+    - age_diff
+    - ht_diff
+  categorical_pipeline:
+    - surface
+    - tourney_level
+    - round
+    - p1_hand
+    - p2_hand
+    
+problem_type: classification

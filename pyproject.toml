@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tennis_mlops"
+version = "0.1.0"
+description = "A Master's Level Business Analytics MLOps Pipeline for ATP Tennis."
+readme = "README.md"
+requires-python = ">=3.9"
+
+dependencies = [
+    "pandas",
+    "numpy",
+    "scikit-learn",
+    "joblib",
+    "pyyaml",
+    "requests",
+    "pandera",
+    "mlflow",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "black",
+    "flake8",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
