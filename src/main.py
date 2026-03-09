@@ -113,15 +113,21 @@ def main(config_path: str = "config.yaml"):
         # 5. Early Split by seasons
         print("\n--- Early Train/Val/Test Split ---")
         if "tourney_date" in df_clean.columns:
-            year_series = pd.to_datetime(df_clean["tourney_date"], format="mixed").dt.year
+            year_series = pd.to_datetime(
+                df_clean["tourney_date"], format="mixed"
+            ).dt.year
         else:
             # Fallback if tourney_date not available (should be due to validation)
             raise ValueError("tourney_date column missing from cleaned dataframe!")
 
-        df_clean_train = df_clean[year_series.isin(dataset_cfg.get("seasons_train", []))]
+        df_clean_train = df_clean[
+            year_series.isin(dataset_cfg.get("seasons_train", []))
+        ]
         df_clean_val = df_clean[year_series.isin(dataset_cfg.get("seasons_val", []))]
         df_clean_test = df_clean[year_series.isin(dataset_cfg.get("seasons_test", []))]
-        df_clean_infer = df_clean[year_series.isin(dataset_cfg.get("seasons_infer", []))]
+        df_clean_infer = df_clean[
+            year_series.isin(dataset_cfg.get("seasons_infer", []))
+        ]
 
         print(
             f"Split sizes -> Train: {len(df_clean_train)}, "
@@ -150,7 +156,9 @@ def main(config_path: str = "config.yaml"):
 
         # Fail-fast feature checks for explicitly configured columns on train split
         for col in numeric_pipeline:
-            if col in X_train.columns and not pd.api.types.is_numeric_dtype(X_train[col]):
+            if col in X_train.columns and not pd.api.types.is_numeric_dtype(
+                X_train[col]
+            ):
                 raise TypeError(
                     f"Column '{col}' mapped for numeric_pipeline must be numeric."
                 )

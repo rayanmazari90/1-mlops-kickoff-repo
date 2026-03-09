@@ -78,7 +78,7 @@ def train_model(
     mlflow.log_param("algorithm", algorithm_name)
     mlflow.log_params(hyperparams)
     mlflow.log_param("random_seed", random_seed)
-    
+
     # Log the full sklearn pipeline using mlflow's flavor
     mlflow.sklearn.log_model(pipeline, artifact_path="model")
 

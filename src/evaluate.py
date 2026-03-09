@@ -20,7 +20,13 @@ import json
 from pathlib import Path
 import pandas as pd
 import numpy as np
-from sklearn.metrics import mean_squared_error, log_loss, brier_score_loss, accuracy_score, roc_auc_score
+from sklearn.metrics import (
+    mean_squared_error,
+    log_loss,
+    brier_score_loss,
+    accuracy_score,
+    roc_auc_score,
+)
 import mlflow
 
 
@@ -127,7 +133,7 @@ def evaluate_model(
         json.dump(metrics, f, indent=4)
 
     print(f"Metrics saved to {metrics_path}")
-    
+
     # MLflow Tracking - log all computed metrics (filtering out None)
     loggable_metrics = {k: v for k, v in metrics.items() if v is not None}
     mlflow.log_metrics(loggable_metrics)
