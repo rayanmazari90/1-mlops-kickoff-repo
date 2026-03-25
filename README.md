@@ -38,6 +38,7 @@ The baseline comparison is a simple model that always predicts the globally high
 
 ### Source
 Data is sourced from the **JeffSackmann ATP dataset** (CSV files per season). 
+- **Automated Ingestion:** The `src/load_data.py` module dynamically downloads the necessary raw CSV datasets directly from the upstream repository and saves them to the `data/raw/` directory automatically. You do not need to manually download or place any data to run the pipeline.
 - To prevent data leakage, we **restrict features to pre-match data only** (no post-match statistics).
 
 ### Privacy & Handling
@@ -115,7 +116,17 @@ The pipeline enforces standard artifacts generated on every successful run:
 
 ## 7. How to Run & Test
 
-Execute the entire ML pipeline from end to end (orchestrated by `config.yaml`):
+### 1. Environment Setup
+First, create and activate the local environment to install all dependencies:
+```bash
+conda env create -f environment.yml
+conda activate mlops-student-env
+# OR alternatively via pip:
+pip install -e .
+```
+
+### 2. Execution
+Execute the entire ML pipeline from end to end (orchestrated by `config.yaml`). The dataset will be downloaded automatically:
 ```bash
 python -m src.main
 ```
@@ -138,6 +149,7 @@ mlflow ui --backend-store-uri sqlite:///mlruns.db
 - **Concurrency & Reproducibility:** Global random seeds replaced with thread-safe `np.random.default_rng(42)`.
 - **Testing:** 33 comprehensive `pytest` assertions simulating the entire pipeline operation natively.
 - **CI/CD:** Automated code formatting (`black`), linting (`flake8`), and testing workflows triggered on GitHub Actions.
+- **Version Control Workflow:** Rigorous iterative feature development using Feature Branches and multiple Pull Requests over at the core team's upstream repository (`2026-IE-MLOps-Course`).
 
 ---
 
