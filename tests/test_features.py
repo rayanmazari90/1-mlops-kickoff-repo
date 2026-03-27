@@ -107,3 +107,24 @@ def test_get_feature_preprocessor_transformers():
     names = [t[0] for t in transformers]
     assert "num" in names
     assert "cat" in names
+
+
+def test_build_features_without_hand_columns():
+    """Features should work even when hand columns are missing."""
+    data = {
+        "surface": ["Hard", "Clay"],
+        "tourney_level": ["G", "M"],
+        "round": ["F", "SF"],
+        "winner_id": [1, 2],
+        "loser_id": [3, 4],
+        "winner_rank": [5, 10],
+        "loser_rank": [20, 30],
+        "winner_age": [25.0, 28.0],
+        "loser_age": [22.0, 26.0],
+        "winner_ht": [185.0, 190.0],
+        "loser_ht": [180.0, 188.0],
+    }
+    df = pd.DataFrame(data)
+    X, y = build_features(df)
+    assert "p1_hand" not in X.columns
+    assert len(X) == 2

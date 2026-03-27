@@ -17,6 +17,18 @@ class DummyModel:
         return np.array([[0.8, 0.2]] * len(X))
 
 
+class MultiClassModel:
+    def predict(self, X):
+        import numpy as np
+
+        return np.array([0] * len(X))
+
+    def predict_proba(self, X):
+        import numpy as np
+
+        return np.array([[0.5, 0.3, 0.2]] * len(X))
+
+
 class BadModel:
     pass
 
@@ -73,3 +85,12 @@ def test_run_inference_standalone(tmp_path):
 
     saved_df = pd.read_csv(output_path, index_col=0)
     assert "prediction" in saved_df.columns
+
+
+def test_run_inference_multiclass_proba():
+    model = MultiClassModel()
+    df = pd.DataFrame({"a": [1, 2, 3]})
+    df_preds = run_inference(model, df)
+    assert "proba_0" in df_preds.columns
+    assert "proba_1" in df_preds.columns
+    assert "proba_2" in df_preds.columns

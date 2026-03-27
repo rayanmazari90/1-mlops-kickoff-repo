@@ -255,3 +255,31 @@ def test_startup_no_model_available(tmp_path, monkeypatch):
 
     assert resp.status_code == 200
     assert resp.json()["model_loaded"] is False
+
+
+def test_predict_model_raises_exception(monkeypatch, tmp_path):
+    """Model that raises during predict should return 422."""
+    monkeypatch.chdir(tmp_path)
+
+    class BrokenModel:
+        def predict(self, X):
+            raise RuntimeError("model exploded")
+
+    api.MODEL = BrokenModel()
+    original_startup = app.router.on_startup
+    app.router.on_startup = []
+    try:
+        with TestClient(app, raise_server_exceptions=False) as c:
+            payload = {
+                "surface": "Hard",
+                "tourney_level": "G",
+                "round": "F",
+                "p1_rank": 1.0,
+                "p2_rank": 10.0,
+            }
+            resp = c.post("/predict", json=payload)
+    finally:
+        app.router.on_startup = original_startup
+        api.MODEL = None
+
+    assert resp.status_code == 422
