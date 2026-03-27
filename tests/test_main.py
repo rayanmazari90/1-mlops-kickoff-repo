@@ -1,19 +1,15 @@
-import os
-
-import mlflow
 import pandas as pd
 import yaml
 
 from src.main import main
 
 
-def test_main_pipeline(tmp_path):
-    # Setup standard directories within tmp_path
+def test_main_pipeline(tmp_path, monkeypatch):
+    monkeypatch.setenv("WANDB_MODE", "offline")
+
     raw_dir = tmp_path / "data" / "raw"
     raw_dir.mkdir(parents=True)
 
-    # Create dummy raw data matching JeffSackmann structure
-    # We will simulate 3 seasons: 2021 (train), 2022 (test), 2023 (infer)
     dummy_data = {
         "tourney_date": [
             "20210101",
@@ -70,7 +66,6 @@ def test_main_pipeline(tmp_path):
     df_22.to_csv(raw_dir / "atp_matches_2022.csv", index=False)
     df_23.to_csv(raw_dir / "atp_matches_2023.csv", index=False)
 
-    # Setup dummy configuration
     dummy_config = {
         "paths": {
             "raw_dir": str(raw_dir),
@@ -80,7 +75,7 @@ def test_main_pipeline(tmp_path):
         },
         "dataset": {
             "base_url": "http://not-a-real-url/",
-            "download_if_missing": False,  # strictly offline
+            "download_if_missing": False,
             "seasons_train": [2021],
             "seasons_val": [],
             "seasons_test": [2022],
@@ -117,7 +112,6 @@ def test_main_pipeline(tmp_path):
         "split": {"strategy": "seasons"},
         "model": {
             "algorithm": "LogisticRegression",
-            # Use LR since RF requires many samples
             "hyperparams": {},
             "random_seed": 42,
         },
@@ -139,11 +133,12 @@ def test_main_pipeline(tmp_path):
             ],
         },
         "evaluation": {
-            "metrics": [
-                "accuracy",
-                "log_loss",
-            ],  # brier_score needs specific labels sometimes
+            "metrics": ["accuracy", "log_loss"],
             "baseline_rule": "dummy rule",
+        },
+        "wandb": {
+            "project": "tennis-atp-test",
+            "entity": "",
         },
     }
 
@@ -151,14 +146,8 @@ def test_main_pipeline(tmp_path):
     with open(config_path, "w") as f:
         yaml.dump(dummy_config, f)
 
-    # Execute the orchestrator
-    try:
-        os.environ["MLFLOW_TRACKING_URI"] = f"sqlite:///{tmp_path}/mlruns.db"
-        main(config_path=str(config_path))
-    finally:
-        mlflow.end_run()
+    main(config_path=str(config_path))
 
-    # Assert artifacts are built
     processed_file = tmp_path / "data" / "processed" / "clean.csv"
     assert processed_file.exists()
 
@@ -168,7 +157,6 @@ def test_main_pipeline(tmp_path):
     predictions_file = tmp_path / "reports" / "predictions.csv"
     assert predictions_file.exists()
 
-    # Assert we have predictions
     preds_df = pd.read_csv(predictions_file, index_col=0)
     assert "prediction" in preds_df.columns
-    assert len(preds_df) == 4  # Since we infer 2023 with 4 matches
+    assert len(preds_df) == 4
