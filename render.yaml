@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: tennis-atp-prediction
+    runtime: python
+    buildCommand: pip install .
+    startCommand: uvicorn src.api:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: WANDB_API_KEY
+        sync: false
+      - key: WANDB_ENTITY
+        value: bmazari-ieu2024-ie-university
+      - key: WANDB_PROJECT
+        value: tennis-atp-prediction
