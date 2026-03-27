@@ -8,7 +8,11 @@ Output: Boolean (True if valid) or raises Error.
 
 import pandas as pd
 import pandera as pa
-from pandera import Column, Check
+from pandera import Check, Column
+
+from src.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 def validate_dataframe(df: pd.DataFrame, config: dict) -> bool:
@@ -19,7 +23,7 @@ def validate_dataframe(df: pd.DataFrame, config: dict) -> bool:
     - Fails fast cleanly without manual iteration. It explicitly documents
       types, value ranges, and constraints.
     """
-    print("Validating dataframe schema using Pandera...")
+    logger.info("Validating dataframe schema using Pandera ...")
 
     if df.empty:
         raise ValueError("Validation failed: DataFrame is completely empty.")
@@ -35,7 +39,6 @@ def validate_dataframe(df: pd.DataFrame, config: dict) -> bool:
     if missing_cols:
         raise ValueError(f"Validation failed: Missing required columns: {missing_cols}")
 
-    # 1. Dynamically build the Pandera Schema
     schema_dict = {}
 
     if "tourney_date" in config_required_cols or "tourney_date" in df.columns:
@@ -63,24 +66,21 @@ def validate_dataframe(df: pd.DataFrame, config: dict) -> bool:
         if col in config_required_cols or col in df.columns:
             schema_dict[col] = Column(float, Check.greater_than(0), nullable=False)
 
-    # Conditional target
     if target_col in config_required_cols or target_col in df.columns:
         schema_dict[target_col] = Column(
             float, Check.isin([0.0, 1.0, 0, 1]), nullable=False
         )
 
-    # Build complete schema
     schema = pa.DataFrameSchema(
         columns=schema_dict,
-        strict=False,  # We allow extra features to freely exist
-        coerce=True,  # Try to coerce types if slightly mis-matched
+        strict=False,
+        coerce=True,
     )
 
     try:
-        # Validate data
         schema.validate(df, lazy=True)
     except pa.errors.SchemaErrors as err:
-        print(f"Pandera Validation Errors: \n{err.failure_cases}")
+        logger.error("Pandera Validation Errors:\n%s", err.failure_cases)
         error_msg = str(err.failure_cases)
         err_str = str(err)
 
