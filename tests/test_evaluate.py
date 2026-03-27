@@ -18,6 +18,25 @@ class MockModel:
         return np.column_stack((prob_0, prob_1))
 
 
+class ModelNoProba:
+    """Model without predict_proba."""
+
+    def predict(self, X):
+        return np.array([1] * len(X))
+
+
+class ModelMultiProba:
+    """Model that returns >2 probability columns."""
+
+    def predict(self, X):
+        return np.array([0] * len(X))
+
+    def predict_proba(self, X):
+        return np.column_stack(
+            [np.full(len(X), 0.6), np.full(len(X), 0.3), np.full(len(X), 0.1)]
+        )
+
+
 @pytest.fixture
 def mock_classification_data():
     X_test = pd.DataFrame({"p1_rank": [10, 50, 5, 100], "p2_rank": [20, 10, 15, 50]})
@@ -118,3 +137,47 @@ def test_evaluate_model_invalid_problem_type(monkeypatch, tmp_path):
     with pytest.raises(ValueError, match="problem_type"):
         evaluate_model(model, X_test, y_test, "unknown")
     wandb.finish()
+
+
+def test_evaluate_model_no_predict_proba(monkeypatch, tmp_path):
+    monkeypatch.setenv("WANDB_MODE", "offline")
+    monkeypatch.chdir(tmp_path)
+
+    X_test = pd.DataFrame({"feat": [1, 2, 3]})
+    y_test = pd.Series([1, 0, 1])
+
+    wandb.init(mode="offline", project="test")
+    metrics = evaluate_model(ModelNoProba(), X_test, y_test, "classification")
+    wandb.finish()
+
+    assert "accuracy" in metrics
+
+
+def test_evaluate_model_multiclass_proba(monkeypatch, tmp_path):
+    monkeypatch.setenv("WANDB_MODE", "offline")
+    monkeypatch.chdir(tmp_path)
+
+    X_test = pd.DataFrame({"feat": [1, 2, 3]})
+    y_test = pd.Series([0, 1, 0])
+
+    wandb.init(mode="offline", project="test")
+    metrics = evaluate_model(ModelMultiProba(), X_test, y_test, "classification")
+    wandb.finish()
+
+    assert "log_loss" in metrics
+
+
+def test_evaluate_model_constant_y(monkeypatch, tmp_path):
+    """When y has only one class, AUC should be None but other metrics should work."""
+    monkeypatch.setenv("WANDB_MODE", "offline")
+    monkeypatch.chdir(tmp_path)
+
+    X_test = pd.DataFrame({"p1_rank": [10, 20, 30], "p2_rank": [30, 40, 50]})
+    y_test = pd.Series([1, 0, 1])
+
+    wandb.init(mode="offline", project="test")
+    metrics = evaluate_model(MockModel(), X_test, y_test, "classification")
+    wandb.finish()
+
+    assert "accuracy" in metrics
+    assert "baseline_accuracy" in metrics
