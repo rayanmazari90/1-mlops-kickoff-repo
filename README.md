@@ -434,6 +434,7 @@ Coverage enforcement: `--cov-fail-under=90` in `pytest.ini`. `src/app.py` (Strea
 
 | Version | Date | Changes |
 |---|---|---|
+| **v1.0.0** | 2026-03-27 | **Stable release:** package (`pyproject.toml`) and OpenAPI metadata aligned at 1.0.0; first GitHub Release tag. Includes everything from v0.2.0 below — this is our production milestone for grading and deployment. |
 | **v0.2.0** | 2026-03-27 | Production upgrade: W&B tracking + model registry (`prod` alias), FastAPI + Pydantic API (`/health`, `/predict`), Streamlit UI with 22 real ATP players and match insights, Docker + `.dockerignore`, `deploy.yml` (GitHub Release triggers Render), `src/logger.py` (zero `print()`, dual output), `conda-lock.yml`, EDA notebook, expanded test suite (62 tests, 93% coverage), live deployment on Render + Streamlit Cloud, full README rewrite with model card |
 | **v0.1.0** | 2026-03-01 | Initial PoC: sklearn pipeline, MLflow tracking, Pandera validation, basic pytest suite, CI via GitHub Actions |
 

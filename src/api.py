@@ -25,7 +25,7 @@ load_dotenv()
 
 app = FastAPI(
     title="Tennis ATP Match Prediction API",
-    version="0.2.0",
+    version="1.0.0",
     description="Predicts the probability of player 1 winning an ATP tennis match.",
 )
 
