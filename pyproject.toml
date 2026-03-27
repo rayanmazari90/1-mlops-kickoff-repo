@@ -36,6 +36,9 @@ ui = [
     "streamlit",
 ]
 
+[tool.coverage.run]
+omit = ["src/app.py"]
+
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["src*"]
