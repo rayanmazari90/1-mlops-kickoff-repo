@@ -189,10 +189,9 @@ Fields `rank_diff`, `age_diff`, `ht_diff`, `p1_hand`, `p2_hand` are optional —
 
 FastAPI auto-generates interactive documentation:
 
-- **Swagger UI:** `http://localhost:8000/docs`
-- **ReDoc:** `http://localhost:8000/redoc`
-
-When deployed on Render, replace `localhost:8000` with the public Render URL.
+- **Swagger UI:** [https://one-mlops-kickoff-repo-1.onrender.com/docs](https://one-mlops-kickoff-repo-1.onrender.com/docs)
+- **ReDoc:** [https://one-mlops-kickoff-repo-1.onrender.com/redoc](https://one-mlops-kickoff-repo-1.onrender.com/redoc)
+- **Local:** `http://localhost:8000/docs` (when running locally)
 
 ---
 
@@ -202,8 +201,11 @@ When deployed on Render, replace `localhost:8000` with the public Render URL.
 
 Our API is deployed on **Render** as a Docker web service.
 
-- **Public URL:** *(will be provided after first deployment)*
+- **Public URL:** [https://one-mlops-kickoff-repo-1.onrender.com](https://one-mlops-kickoff-repo-1.onrender.com)
+- **API Docs:** [https://one-mlops-kickoff-repo-1.onrender.com/docs](https://one-mlops-kickoff-repo-1.onrender.com/docs)
+- **Health Check:** [https://one-mlops-kickoff-repo-1.onrender.com/health](https://one-mlops-kickoff-repo-1.onrender.com/health)
 - **Deployment trigger:** Publishing a **GitHub Release** from `main` fires the `deploy.yml` workflow, which hits the Render Deploy Hook.
+- **Note:** The free-tier Render instance spins down after inactivity. The first request may take ~30 seconds while it wakes up.
 
 ### Docker
 
@@ -218,17 +220,20 @@ The Dockerfile uses `python:3.11-slim`, installs only production dependencies, a
 
 ## 8. Interactive UI (Bonus)
 
-We built a **Streamlit** interface (`src/app.py`) that lets non-technical users interact with the model:
+We built a **Streamlit** interface (`src/app.py`) that lets non-technical users interact with the model without any coding knowledge.
 
-- Select surface, tournament level, round
-- Enter both players' ATP rankings, hand, age, and height
-- Click "Predict" to see the win probability displayed as a progress gauge
-- Colour-coded confidence indicator (green/yellow/blue)
+- **Pre-loaded top 20 ATP players** (Sinner, Djokovic, Alcaraz, Zverev, ...) with real rankings, hand, age, height — or enter a custom player
+- Select surface (Hard/Clay/Grass), tournament level (Grand Slam, Masters, etc.), and round
+- **Visual match outcome** with win probabilities for both players, progress bar, and match insight
+- "About" section with model metadata, accuracy, and links
 
-Run it locally:
+**Live URL:** [https://rayanmazari90-1-mlops-kickoff-repo.streamlit.app](https://rayanmazari90-1-mlops-kickoff-repo.streamlit.app)
+
+Run locally:
 
 ```bash
-API_URL=http://localhost:8000 streamlit run src/app.py
+pip install streamlit
+streamlit run src/app.py
 ```
 
 ---
@@ -310,7 +315,7 @@ We follow a clean branching strategy:
 │   ├── train.py            # Model training
 │   ├── utils.py            # I/O helpers
 │   └── validate.py         # Pandera schema validation
-├── tests/                  # 45 pytest tests, 80%+ coverage
+├── tests/                  # 62 pytest tests, 93% coverage
 ├── data/                   # Raw + processed (gitignored)
 ├── models/                 # Model artifacts (gitignored)
 ├── reports/                # Metrics + predictions (gitignored)
@@ -332,7 +337,7 @@ We follow a clean branching strategy:
 
 | Version | Date | Changes |
 |---|---|---|
-| **v0.2.0** | 2026-03-27 | Production upgrade: W&B tracking + model registry, FastAPI + Pydantic API (`/health`, `/predict`), Streamlit UI, Docker + `.dockerignore`, `deploy.yml` (GitHub Release → Render), `src/logger.py` (zero `print()`), `conda-lock.yml`, expanded test suite (45 tests, 80%+ coverage), full README rewrite |
+| **v0.2.0** | 2026-03-27 | Production upgrade: W&B tracking + model registry, FastAPI + Pydantic API (`/health`, `/predict`), Streamlit UI with real ATP players, Docker + `.dockerignore`, `deploy.yml` (GitHub Release → Render), `src/logger.py` (zero `print()`), `conda-lock.yml`, expanded test suite (62 tests, 93% coverage), live deployment on Render, full README rewrite |
 | **v0.1.0** | 2026-03-01 | Initial PoC: sklearn pipeline, MLflow tracking, Pandera validation, pytest suite, CI via GitHub Actions |
 
 ---
