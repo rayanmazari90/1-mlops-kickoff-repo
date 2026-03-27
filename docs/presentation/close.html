@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Close — Ethics, roadmap, script</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body data-page="close">
+  <nav class="site-nav" aria-label="Chapters">
+    <a class="brand" href="index.html">MLOps <span>· Group 8</span></a>
+    <div class="nav-chapters">
+      <a href="index.html">Start</a>
+      <a href="kpi.html">KPIs</a>
+      <a href="story.html">Story</a>
+      <a href="platform.html">Platform</a>
+      <a href="proof.html">Proof</a>
+      <a href="close.html">Close</a>
+    </div>
+  </nav>
+
+  <div class="shell">
+    <header class="reveal" style="padding-top: 0.5rem;">
+      <p class="kicker">Chapter 05 · Land the plane</p>
+      <h1>Ethics, continuous data, and your delivery</h1>
+      <p class="lead">
+        Serious buyers — and professors — reward <strong>candour</strong>. We state limits, avoid autonomous-betting hype, and show how today’s plumbing unlocks tomorrow’s daily data feeds.
+      </p>
+    </header>
+
+    <section class="page-section reveal">
+      <h2>Model card (honest limits)</h2>
+      <div class="pain-box" style="border-color: rgba(232, 197, 71, 0.35); background: rgba(232, 197, 71, 0.06);">
+        <h3 style="color: var(--gold);">What we don’t claim</h3>
+        <p class="p-small" style="margin: 0;">
+          No in-match dynamics, no head-to-head depth, no injury model. Performance can drift as the tour evolves; hard-court heavy training may bias clay/grass edge cases.
+          <strong>Positioning:</strong> decision support — combine outputs with domain knowledge and risk policy. Especially relevant for betting-adjacent storytelling.
+        </p>
+      </div>
+    </section>
+
+    <section class="page-section reveal">
+      <h2>Roadmap: “daily data” without vaporware</h2>
+      <ul class="story-timeline">
+        <li><strong>Scheduled pipeline</strong> — retrain when new JeffSackmann seasons drop (cron / GitHub Actions).</li>
+        <li><strong>Artifact lineage</strong> — every promoted model tied to a W&amp;B run + Git SHA.</li>
+        <li><strong>Drift awareness</strong> — monitor rank/surface distributions before silent degradation.</li>
+        <li><strong>More consumers</strong> — anything that can POST JSON can use <code>/predict</code> at scale.</li>
+      </ul>
+    </section>
+
+    <section class="page-section reveal">
+      <h2>10′ video script (talking points — do not read on camera)</h2>
+      <p class="p-small">
+        Full minute-by-minute outline, soundbites, and taboos live in <strong><a href="VIDEO_SCRIPT.md">VIDEO_SCRIPT.md</a></strong> in this folder.
+        Open it in your editor or on GitHub — it’s designed as <em>memory scaffolding</em>, not a teleprompter (your assignment forbids reading a script verbatim).
+      </p>
+      <div class="kpi-northstar" style="margin-top: 1rem;">
+        <p class="p-small" style="margin: 0;">
+          <strong>Quick beats:</strong> (0–2′) persona + pain → (2–4′) KPIs &amp; calibration story → (4–7′) live Swagger + Streamlit + W&amp;B → (7–9′) CI/Docker/registry → (9–10′) ethics + roadmap + thank-you.
+        </p>
+      </div>
+    </section>
+
+    <section class="page-section reveal">
+      <h2>Group 8</h2>
+      <p class="p-small">
+        Rayane Boumediene Mazari, Sacha Huberty, Shreya Jha, Smaragda Apostolou, Marco De Palma, Pipe — MsC Business Analytics &amp; Data Science, IE University.
+      </p>
+    </section>
+
+    <div class="pager">
+      <a href="proof.html">← Proof</a>
+      <a href="index.html">↑ Back to Start</a>
+    </div>
+
+    <footer class="site-footer">
+      <p>
+        <a href="https://github.com/rayanmazari90/1-mlops-kickoff-repo" target="_blank" rel="noopener">github.com/rayanmazari90/1-mlops-kickoff-repo</a>
+      </p>
+    </footer>
+  </div>
+  <script src="assets/app.js" defer></script>
+</body>
+</html>

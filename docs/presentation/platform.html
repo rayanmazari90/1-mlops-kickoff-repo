@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Platform — Architecture &amp; code</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body data-page="platform">
+  <nav class="site-nav" aria-label="Chapters">
+    <a class="brand" href="index.html">MLOps <span>· Group 8</span></a>
+    <div class="nav-chapters">
+      <a href="index.html">Start</a>
+      <a href="kpi.html">KPIs</a>
+      <a href="story.html">Story</a>
+      <a href="platform.html">Platform</a>
+      <a href="proof.html">Proof</a>
+      <a href="close.html">Close</a>
+    </div>
+  </nav>
+
+  <div class="shell">
+    <header class="reveal" style="padding-top: 0.5rem;">
+      <p class="kicker">Chapter 03 · Divide &amp; conquer</p>
+      <h1>Platform: config → pipeline → registry → API</h1>
+      <p class="lead">
+        We didn’t bolt on a random API. The same <code>src/</code> modules power training, evaluation, batch inference, and serving — so there is <strong>one brain</strong>, many surfaces.
+      </p>
+    </header>
+
+    <section class="page-section reveal">
+      <h2>System architecture</h2>
+      <p class="p-small">Memorize this box for the examiners: orchestration in <code>main.py</code>, promotion in W&amp;B, consumption via FastAPI and Streamlit.</p>
+      <div class="arch-block">┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│ config.yaml │───>│  main.py    │───>│    W&amp;B      │───>│  api.py     │
+│ .env        │    │ orchestrator│    │  tracking   │    │  FastAPI    │
+└─────────────┘    │             │    │  registry   │    │ /health     │
+                   │ load_data   │    │  artifacts  │    │ /predict    │
+                   │ clean_data  │    └──────┬──────┘    └──────┬──────┘
+                   │ validate    │           │ prod             │
+                   │ features    │           │ alias            │
+                   │ train       │           ▼                  │
+                   │ evaluate    │    ┌─────────────┐    ┌──────▼──────┐
+                   │ infer       │    │  model      │    │   Render    │
+                   └─────────────┘    │  joblib     │    │   Docker    │
+                                      └─────────────┘    └──────┬──────┘
+                   ┌─────────────┐                              │
+                   │  app.py     │──────────────────────────────┘
+                   │  Streamlit  │        calls /predict
+                   └─────────────┘</div>
+    </section>
+
+    <section class="page-section reveal">
+      <h2>Code map (what each file “sells”)</h2>
+      <div class="module-grid reveal-stagger">
+        <div class="module-pill"><code>main.py</code> — Single entry; W&amp;B init; full orchestration.</div>
+        <div class="module-pill"><code>load_data.py</code> — Ingest ATP CSVs; idempotent pulls.</div>
+        <div class="module-pill"><code>clean_data.py</code> — Standardise names, dates, ranks.</div>
+        <div class="module-pill"><code>validate.py</code> — Pandera: fail fast on bad data.</div>
+        <div class="module-pill"><code>features.py</code> — Leakage-aware features + sklearn recipe.</div>
+        <div class="module-pill"><code>train.py</code> / <code>evaluate.py</code> — Fit, metrics, baseline compare.</div>
+        <div class="module-pill"><code>infer.py</code> — Batch scoring with strict schema.</div>
+        <div class="module-pill"><code>api.py</code> — Zero ML logic; Pydantic I/O only.</div>
+        <div class="module-pill"><code>app.py</code> — Streamlit; real player presets; UX.</div>
+        <div class="module-pill"><code>logger.py</code> — Dual log; no <code>print()</code> in prod.</div>
+      </div>
+    </section>
+
+    <section class="page-section reveal">
+      <h2>API contract (soundbite)</h2>
+      <pre class="arch-block" style="white-space: pre-wrap;">POST /predict  →  { "prediction": 1, "probability": 0.73 }
+GET  /health   →  { "status": "ok", "model_loaded": true }</pre>
+      <p class="p-small">OpenAPI is auto-generated — Swagger and ReDoc are your free “sales brochure” for technical buyers.</p>
+    </section>
+
+    <div class="pager">
+      <a href="story.html">← Story</a>
+      <a href="proof.html">Next: Proof →</a>
+    </div>
+
+    <footer class="site-footer">
+      <p><a href="VIDEO_SCRIPT.md">VIDEO_SCRIPT.md</a> · Chapter 03 timing: ~2 min</p>
+    </footer>
+  </div>
+  <script src="assets/app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Story — Notebook vs MLOps</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body data-page="story">
+  <nav class="site-nav" aria-label="Chapters">
+    <a class="brand" href="index.html">MLOps <span>· Group 8</span></a>
+    <div class="nav-chapters">
+      <a href="index.html">Start</a>
+      <a href="kpi.html">KPIs</a>
+      <a href="story.html">Story</a>
+      <a href="platform.html">Platform</a>
+      <a href="proof.html">Proof</a>
+      <a href="close.html">Close</a>
+    </div>
+  </nav>
+
+  <div class="shell">
+    <header class="reveal" style="padding-top: 0.5rem;">
+      <p class="kicker">Chapter 02 · Business storytelling</p>
+      <h1>From the lab notebook to the operations desk</h1>
+      <p class="lead">
+        <strong>Persona:</strong> a sports analyst or desk that needs <em>repeatable</em> pre-match win probabilities — not a one-off chart from last Tuesday’s Jupyter session.
+        <strong>Conflict:</strong> notebooks explore; they don’t <em>govern</em>.
+        <strong>Resolution:</strong> our MLOps stack turns the same science into a <strong>product</strong>: API, UI, tests, registry, logs.
+      </p>
+    </header>
+
+    <section class="page-section reveal">
+      <h2>The drama: two worlds</h2>
+      <div class="split-drama">
+        <div class="pain-box">
+          <h3>Notebook-heavy PoC</h3>
+          <p class="p-small" style="margin: 0;">
+            Hidden cell order. “Works on my machine.” Which pickle file is production? No contract on JSON inputs.
+            Stakeholders can’t self-serve; every question routes through a data scientist. <strong>Business cost:</strong> latency, key-person risk, un-auditable decisions.
+          </p>
+        </div>
+        <div class="gain-box">
+          <h3>Our MLOps product</h3>
+          <p class="p-small" style="margin: 0;">
+            Single command pipeline. Pydantic validates every API call. Model promoted via W&amp;B <code>prod</code>.
+            Streamlit + Swagger let anyone reproduce the same prediction. <strong>Business value:</strong> trust, speed, and a paper trail when regulators or risk ask “why this score?”
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="page-section reveal">
+      <h2>Narrative arc (for your 10′ pitch)</h2>
+      <ul class="story-timeline">
+        <li>
+          <strong>Act I — Pain.</strong> Gut feel and ad-hoc notebooks don’t scale; calibration matters more than a flashy accuracy slide.
+        </li>
+        <li>
+          <strong>Act II — Pivot.</strong> We engineered the same ATP prediction into modules, tests, and a deployed API — so “model” means one governed artifact.
+        </li>
+        <li>
+          <strong>Act III — Proof.</strong> Live <code>/docs</code>, Streamlit, W&amp;B lineage, CI green — evidence, not slides.
+        </li>
+        <li>
+          <strong>Denouement — Honesty.</strong> We state limitations (no in-match stats, drift) and position the system as <strong>decision support</strong>, especially in betting-adjacent contexts.
+        </li>
+      </ul>
+    </section>
+
+    <section class="page-section reveal">
+      <h2>Why MLOps = higher business value (summary)</h2>
+      <div class="kpi-table-wrap">
+        <table class="kpi-table">
+          <thead>
+            <tr>
+              <th>Dimension</th>
+              <th>Notebook workflow</th>
+              <th>MLOps workflow</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="metric-name">Repeatability</td>
+              <td class="neg">Fragile</td>
+              <td class="pos">Deterministic pipeline + locked env</td>
+            </tr>
+            <tr>
+              <td class="metric-name">Consumption</td>
+              <td class="neg">Manual rerun</td>
+              <td class="pos">API + UI, sub-second inference path</td>
+            </tr>
+            <tr>
+              <td class="metric-name">Trust</td>
+              <td class="neg">Implicit</td>
+              <td class="pos">Tests + coverage gate + explicit release</td>
+            </tr>
+            <tr>
+              <td class="metric-name">Scale path</td>
+              <td class="neg">Rewrite later</td>
+              <td class="pos">Docker + Render + hooks for daily data</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="pager">
+      <a href="kpi.html">← KPIs</a>
+      <a href="platform.html">Next: Platform →</a>
+    </div>
+
+    <footer class="site-footer">
+      <p><a href="VIDEO_SCRIPT.md">VIDEO_SCRIPT.md</a> · Chapter 02 timing: ~2.5 min</p>
+    </footer>
+  </div>
+  <script src="assets/app.js" defer></script>
+</body>
+</html>

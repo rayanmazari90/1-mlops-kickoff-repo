@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Business and model KPIs — Tennis MLOps Group 8" />
+  <title>KPIs — Tennis MLOps Pitch</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body data-page="kpi">
+  <nav class="site-nav" aria-label="Chapters">
+    <a class="brand" href="index.html">MLOps <span>· Group 8</span></a>
+    <div class="nav-chapters">
+      <a href="index.html">Start</a>
+      <a href="kpi.html">KPIs</a>
+      <a href="story.html">Story</a>
+      <a href="platform.html">Platform</a>
+      <a href="proof.html">Proof</a>
+      <a href="close.html">Close</a>
+    </div>
+  </nav>
+
+  <div class="shell">
+    <header class="reveal" style="padding-top: 0.5rem;">
+      <p class="kicker">Chapter 01 · The scoreboard</p>
+      <h1>If you can’t measure it, you can’t trade it</h1>
+      <p class="lead">
+        In pre-match analytics, <strong>raw accuracy is a vanity metric</strong>. Desks care about <strong>calibrated probabilities</strong> (log loss, Brier) because those drive position sizing and risk. Below: <em>business KPIs</em> we optimise for operationally, then <em>model KPIs</em> from our held-out test set vs a rank-only baseline.
+      </p>
+    </header>
+
+    <section class="page-section reveal">
+      <h2>Business KPI framework (how we sell value)</h2>
+      <p class="p-small">These are the levers a sports analytics or trading-adjacent stakeholder actually feels — aligned with our README business case.</p>
+      <div class="kpi-table-wrap">
+        <table class="kpi-table">
+          <thead>
+            <tr>
+              <th>Business KPI</th>
+              <th>What “good” looks like</th>
+              <th>How we deliver</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="metric-name">Calibration quality</td>
+              <td>Probabilities that match reality (not just direction)</td>
+              <td>Optimise log loss &amp; Brier vs baseline; report both in evaluation</td>
+            </tr>
+            <tr>
+              <td class="metric-name">Decision latency</td>
+              <td>Seconds from question → answer, not “wait for the analyst’s notebook”</td>
+              <td>REST <code>/predict</code> + Streamlit for non-technical users</td>
+            </tr>
+            <tr>
+              <td class="metric-name">Model governance</td>
+              <td>One promoted production model; traceable lineage</td>
+              <td>W&amp;B registry + <code>prod</code> alias; API loads that artifact on startup</td>
+            </tr>
+            <tr>
+              <td class="metric-name">Change confidence</td>
+              <td>New code doesn’t silently break predictions</td>
+              <td>CI: black, flake8, pytest with ≥90% coverage on core <code>src/</code></td>
+            </tr>
+            <tr>
+              <td class="metric-name">Operational audit trail</td>
+              <td>When something fails, we know where to look</td>
+              <td>Structured logging; W&amp;B runs; Render API logs</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="page-section reveal">
+      <h2>North star (model outcome)</h2>
+      <div class="kpi-hero">
+        <div class="kpi-northstar">
+          <p class="p-small" style="margin-top: 0;">
+            <strong>North star:</strong> Beat the “always pick the higher rank” heuristic on <strong>calibration</strong>, not only accuracy.
+            Our test-set <strong>log loss</strong> and <strong>Brier score</strong> improvements vs baseline are the headline — they mean probabilities are usable for ranking and risk-aware workflows.
+          </p>
+        </div>
+        <div class="kpi-grid reveal-stagger">
+          <div class="kpi-tile">
+            <div class="unit">Test accuracy</div>
+            <div class="value" data-count="65.3" data-decimals="1" data-suffix="%" data-animate="">0%</div>
+            <div class="label">Model vs 64.9% baseline</div>
+          </div>
+          <div class="kpi-tile">
+            <div class="unit">Log loss (lower = better)</div>
+            <div class="value" data-count="0.637" data-decimals="3" data-animate="">0</div>
+            <div class="label">vs 12.665 baseline</div>
+          </div>
+          <div class="kpi-tile">
+            <div class="unit">Brier score</div>
+            <div class="value" data-count="0.223" data-decimals="3" data-animate="">0</div>
+            <div class="label">vs 0.351 baseline</div>
+          </div>
+          <div class="kpi-tile">
+            <div class="unit">ROC AUC</div>
+            <div class="value" data-count="0.706" data-decimals="3" data-animate="">0</div>
+            <div class="label">vs 0.649 baseline</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page-section reveal">
+      <h2>Head-to-head: model vs baseline</h2>
+      <div class="kpi-table-wrap">
+        <table class="kpi-table">
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th>Our model</th>
+              <th>Baseline (rank heuristic)</th>
+              <th>Δ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="metric-name">Accuracy</td>
+              <td>65.3%</td>
+              <td>64.9%</td>
+              <td class="pos">+0.4 pp</td>
+            </tr>
+            <tr>
+              <td class="metric-name">Log loss</td>
+              <td>0.637</td>
+              <td>12.665</td>
+              <td class="pos">~95% better</td>
+            </tr>
+            <tr>
+              <td class="metric-name">Brier score</td>
+              <td>0.223</td>
+              <td>0.351</td>
+              <td class="pos">37% better</td>
+            </tr>
+            <tr>
+              <td class="metric-name">ROC AUC</td>
+              <td>0.706</td>
+              <td>0.649</td>
+              <td class="pos">+0.057</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="p-small" style="margin-top: 1rem;">
+        <strong>Storyline for video:</strong> “We don’t only beat the baseline on accuracy by a hair — we crush it on <em>probability quality</em>, which is what you need when outcomes are uncertain and stakes are asymmetric.”
+      </p>
+    </section>
+
+    <div class="pager">
+      <a href="index.html">← Start</a>
+      <a href="story.html">Next: Story →</a>
+    </div>
+
+    <footer class="site-footer">
+      <p><a href="VIDEO_SCRIPT.md">VIDEO_SCRIPT.md</a> · Chapter 01 timing: ~2 min</p>
+    </footer>
+  </div>
+  <script src="assets/app.js" defer></script>
+</body>
+</html>

@@ -14,13 +14,22 @@
 
 ### Business presentation website
 
-We ship a **static narrative site** (business value vs notebook PoC, architecture, API contract, live links, CI/CD, model card summary, video outline) for demos and coursework:
+We ship a **multipage static pitch** (divide-and-conquer chapters) with animations (scroll reveals, KPI count-ups, hover motion), **business KPI framework** + model scoreboard, narrative arc (notebook vs product), architecture/code map, live proof links, ethics/roadmap, and a **10-minute video script** (`VIDEO_SCRIPT.md` — talking points only, not for reading verbatim on camera).
 
-- **Path in repo:** [`docs/presentation/index.html`](docs/presentation/index.html)
-- **Open locally:** double-click the file or run `open docs/presentation/index.html` (macOS).
-- **GitHub Pages (optional):** in the repository **Settings → Pages**, set **Build and deployment → Source** to **Deploy from a branch**, branch **`main`**, folder **`/docs`**. The site will be available at  
-  `https://<your-username>.github.io/1-mlops-kickoff-repo/presentation/`  
-  (GitHub serves `index.html` under each folder inside `docs/`).
+| Chapter | File | Content |
+|---|---|---|
+| Start | [`docs/presentation/index.html`](docs/presentation/index.html) | Hero, three promises, chapter cards |
+| KPIs | [`docs/presentation/kpi.html`](docs/presentation/kpi.html) | Business KPI table, north-star metrics, model vs baseline |
+| Story | [`docs/presentation/story.html`](docs/presentation/story.html) | Persona, pain/gain, notebook vs MLOps |
+| Platform | [`docs/presentation/platform.html`](docs/presentation/platform.html) | Architecture ASCII, `src/` map, API soundbite |
+| Proof | [`docs/presentation/proof.html`](docs/presentation/proof.html) | Live Swagger, Streamlit, W&amp;B, CI |
+| Close | [`docs/presentation/close.html`](docs/presentation/close.html) | Ethics, roadmap, script pointer |
+| Script | [`docs/presentation/VIDEO_SCRIPT.md`](docs/presentation/VIDEO_SCRIPT.md) | Minute-by-minute delivery outline |
+
+**Assets:** [`docs/presentation/assets/styles.css`](docs/presentation/assets/styles.css), [`docs/presentation/assets/app.js`](docs/presentation/assets/app.js)
+
+- **Open locally:** open `docs/presentation/index.html` in a browser (or `python -m http.server` from `docs/presentation` for relative asset loading if needed).
+- **GitHub Pages (optional):** **Settings → Pages →** branch **`main`**, folder **`/docs`**. Site root: `https://<user>.github.io/1-mlops-kickoff-repo/` — open **`/presentation/`** for this deck.
 
 ---
 

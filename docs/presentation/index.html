@@ -3,608 +3,101 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Group 8 — ATP Tennis MLOps: business value, architecture, and live systems." />
-  <title>Tennis MLOps — Business & Technical Story</title>
+  <meta name="description" content="ATP Tennis MLOps — business narrative, KPIs, and live platform." />
+  <title>Start — Tennis MLOps Pitch</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet" />
-  <style>
-    :root {
-      --court: #0d2818;
-      --court-mid: #1a4d2e;
-      --line: #e8f4e8;
-      --clay: #c45c3e;
-      --ball: #c8e632;
-      --ink: #0a0f0c;
-      --muted: rgba(232, 244, 232, 0.72);
-      --card: rgba(26, 77, 46, 0.55);
-      --font-display: "Archivo Black", sans-serif;
-      --font-serif: "Instrument Serif", Georgia, serif;
-      --font-body: "Outfit", system-ui, sans-serif;
-      --font-mono: "JetBrains Mono", ui-monospace, monospace;
-    }
-
-    *, *::before, *::after { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      margin: 0;
-      font-family: var(--font-body);
-      font-weight: 400;
-      color: var(--line);
-      background: var(--court);
-      line-height: 1.55;
-      overflow-x: hidden;
-    }
-
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .wrap { position: relative; z-index: 1; max-width: 1120px; margin: 0 auto; padding: 0 1.25rem 4rem; }
-
-    /* Nav */
-    nav {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.75rem;
-      padding: 0.85rem 0;
-      margin: 0 -1.25rem;
-      padding-left: 1.25rem;
-      padding-right: 1.25rem;
-      background: linear-gradient(180deg, rgba(13, 40, 24, 0.97) 60%, transparent);
-      backdrop-filter: blur(8px);
-      border-bottom: 1px solid rgba(232, 244, 232, 0.12);
-    }
-    nav a.brand {
-      font-family: var(--font-display);
-      font-size: 0.95rem;
-      letter-spacing: 0.04em;
-      color: var(--ball);
-      text-decoration: none;
-      text-transform: uppercase;
-    }
-    nav .links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.35rem 0.75rem;
-      justify-content: flex-end;
-    }
-    nav .links a {
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: var(--muted);
-      text-decoration: none;
-      transition: color 0.2s;
-    }
-    nav .links a:hover { color: var(--line); }
-
-    /* Hero */
-    header.hero {
-      padding: 3rem 0 3.5rem;
-      position: relative;
-    }
-    header.hero::after {
-      content: "";
-      position: absolute;
-      left: -2rem;
-      top: 40%;
-      width: 120px;
-      height: 3px;
-      background: linear-gradient(90deg, var(--clay), transparent);
-      transform: rotate(-8deg);
-      opacity: 0.9;
-    }
-    .badge {
-      display: inline-block;
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--court);
-      background: var(--ball);
-      padding: 0.35rem 0.65rem;
-      margin-bottom: 1rem;
-      animation: fadeUp 0.8s ease both;
-    }
-    h1 {
-      font-family: var(--font-display);
-      font-size: clamp(2.1rem, 6vw, 3.6rem);
-      line-height: 1.05;
-      margin: 0 0 1rem;
-      letter-spacing: -0.02em;
-      color: var(--line);
-      max-width: 14ch;
-      animation: fadeUp 0.8s 0.1s ease both;
-    }
-    .hero-lead {
-      font-family: var(--font-serif);
-      font-size: clamp(1.25rem, 2.8vw, 1.65rem);
-      font-style: italic;
-      color: var(--muted);
-      max-width: 36ch;
-      margin: 0 0 1.75rem;
-      animation: fadeUp 0.8s 0.2s ease both;
-    }
-    .hero-cta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-      animation: fadeUp 0.8s 0.35s ease both;
-    }
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      padding: 0.65rem 1.1rem;
-      font-family: var(--font-body);
-      font-size: 0.88rem;
-      font-weight: 600;
-      border-radius: 2px;
-      text-decoration: none;
-      transition: transform 0.15s, box-shadow 0.15s;
-    }
-    .btn-primary {
-      background: var(--clay);
-      color: var(--line);
-      border: none;
-    }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(196, 92, 62, 0.35); }
-    .btn-ghost {
-      background: transparent;
-      color: var(--line);
-      border: 1px solid rgba(232, 244, 232, 0.35);
-    }
-    .btn-ghost:hover { border-color: var(--ball); color: var(--ball); }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(18px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    section {
-      padding: 3rem 0;
-      border-top: 1px solid rgba(232, 244, 232, 0.1);
-    }
-    h2 {
-      font-family: var(--font-display);
-      font-size: clamp(1.5rem, 3.5vw, 2rem);
-      letter-spacing: 0.02em;
-      margin: 0 0 0.5rem;
-      color: var(--line);
-    }
-    .section-kicker {
-      font-size: 0.75rem;
-      font-weight: 700;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--clay);
-      margin-bottom: 0.35rem;
-    }
-    .section-intro {
-      color: var(--muted);
-      max-width: 62ch;
-      margin-bottom: 1.5rem;
-    }
-
-    /* Cards grid */
-    .grid-2 {
-      display: grid;
-      gap: 1rem;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    }
-    .grid-3 {
-      display: grid;
-      gap: 1rem;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    }
-    .card {
-      background: var(--card);
-      border: 1px solid rgba(232, 244, 232, 0.12);
-      border-radius: 4px;
-      padding: 1.15rem 1.25rem;
-      transition: border-color 0.2s, transform 0.2s;
-    }
-    .card:hover {
-      border-color: rgba(200, 230, 50, 0.35);
-      transform: translateY(-2px);
-    }
-    .card h3 {
-      font-size: 1rem;
-      margin: 0 0 0.5rem;
-      font-weight: 700;
-      color: var(--ball);
-    }
-    .card p { margin: 0; font-size: 0.92rem; color: var(--muted); }
-
-    /* Comparison */
-    .compare-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.88rem;
-      margin-top: 1rem;
-    }
-    .compare-table th,
-    .compare-table td {
-      padding: 0.75rem 0.85rem;
-      text-align: left;
-      border-bottom: 1px solid rgba(232, 244, 232, 0.1);
-    }
-    .compare-table th {
-      font-weight: 700;
-      color: var(--ball);
-      background: rgba(0, 0, 0, 0.2);
-    }
-    .compare-table td:first-child { font-weight: 600; color: var(--line); }
-    .neg { color: #ff8a7a; }
-    .pos { color: #9fe8b4; }
-
-    /* Architecture */
-    .arch-flow {
-      font-family: var(--font-mono);
-      font-size: clamp(0.62rem, 1.35vw, 0.74rem);
-      line-height: 1.5;
-      background: rgba(0, 0, 0, 0.35);
-      border: 1px solid rgba(232, 244, 232, 0.15);
-      border-radius: 4px;
-      padding: 1.25rem;
-      overflow-x: auto;
-      white-space: pre;
-      color: var(--muted);
-    }
-
-    /* Code */
-    pre.code {
-      font-family: var(--font-mono);
-      font-size: 0.78rem;
-      line-height: 1.5;
-      background: rgba(0, 0, 0, 0.45);
-      border-left: 3px solid var(--clay);
-      padding: 1rem 1.1rem;
-      overflow-x: auto;
-      margin: 1rem 0 0;
-      color: #c8e8d0;
-    }
-    pre.code .kw { color: #7dd3fc; }
-    pre.code .str { color: var(--ball); }
-
-    /* Live links */
-    .link-tile {
-      display: block;
-      padding: 1.25rem;
-      background: linear-gradient(135deg, var(--court-mid), rgba(13, 40, 24, 0.9));
-      border: 1px solid rgba(232, 244, 232, 0.15);
-      border-radius: 4px;
-      text-decoration: none;
-      color: inherit;
-      transition: border-color 0.2s;
-    }
-    .link-tile:hover { border-color: var(--ball); }
-    .link-tile strong { display: block; font-size: 1rem; margin-bottom: 0.35rem; color: var(--line); }
-    .link-tile span { font-size: 0.82rem; color: var(--muted); word-break: break-all; }
-
-    /* Metrics strip */
-    .metrics {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 0.75rem;
-      margin-top: 1.25rem;
-    }
-    .metric {
-      text-align: center;
-      padding: 1rem;
-      background: rgba(0, 0, 0, 0.25);
-      border-radius: 4px;
-      border: 1px solid rgba(232, 244, 232, 0.08);
-    }
-    .metric b {
-      display: block;
-      font-family: var(--font-display);
-      font-size: 1.35rem;
-      color: var(--ball);
-    }
-    .metric small { color: var(--muted); font-size: 0.75rem; }
-
-    /* Roadmap */
-    ul.clean {
-      margin: 0;
-      padding-left: 1.1rem;
-      color: var(--muted);
-    }
-    ul.clean li { margin-bottom: 0.5rem; }
-
-    footer.site-footer {
-      margin-top: 3rem;
-      padding-top: 2rem;
-      border-top: 1px solid rgba(232, 244, 232, 0.15);
-      font-size: 0.85rem;
-      color: var(--muted);
-    }
-    footer.site-footer a { color: var(--ball); }
-
-    @media (max-width: 640px) {
-      nav .links { width: 100%; justify-content: flex-start; }
-    }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/styles.css" />
 </head>
-<body>
-  <div class="wrap">
-    <nav>
-      <a class="brand" href="#top">MLOps · Group 8</a>
-      <div class="links">
-        <a href="#story">Story</a>
-        <a href="#compare">Notebooks vs MLOps</a>
-        <a href="#architecture">Architecture</a>
-        <a href="#pipeline">Code</a>
-        <a href="#api">API</a>
-        <a href="#live">Live</a>
-        <a href="#ui">UI</a>
-        <a href="#mlops">CI/CD</a>
-        <a href="#model">Model</a>
-        <a href="#roadmap">Roadmap</a>
-      </div>
-    </nav>
+<body data-page="home">
+  <nav class="site-nav" aria-label="Chapters">
+    <a class="brand" href="index.html">MLOps <span>· Group 8</span></a>
+    <div class="nav-chapters">
+      <a href="index.html" data-nav="home">Start</a>
+      <a href="kpi.html" data-nav="kpi">KPIs</a>
+      <a href="story.html" data-nav="story">Story</a>
+      <a href="platform.html" data-nav="platform">Platform</a>
+      <a href="proof.html" data-nav="proof">Proof</a>
+      <a href="close.html" data-nav="close">Close</a>
+    </div>
+  </nav>
 
-    <header class="hero" id="top">
-      <span class="badge">IE University · MLOps 2026</span>
-      <h1>From notebooks to a production edge</h1>
-      <p class="hero-lead">Why our ATP prediction stack delivers more business value than a notebook-only workflow — and how we run it like a real product.</p>
-      <div class="hero-cta">
-        <a class="btn btn-primary" href="#compare">See the business case</a>
-        <a class="btn btn-ghost" href="https://github.com/rayanmazari90/1-mlops-kickoff-repo" target="_blank" rel="noopener">GitHub repository</a>
+  <div class="shell">
+    <header class="hero-home">
+      <div class="hero-orbs" aria-hidden="true">
+        <div class="orb"></div>
+        <div class="orb"></div>
+        <div class="orb"></div>
+      </div>
+      <div class="stagger">
+        <div class="badge-row">
+          <span class="badge gold">IE University · MLOps 2026</span>
+          <span class="badge">Production-grade pipeline</span>
+        </div>
+        <h1>Calibrated probability.<br />Deployed like a product.</h1>
+        <p class="lead">
+          We moved from exploratory notebooks to a <strong>versioned, test-gated, API-first</strong> system so stakeholders get the same answer every time — with metrics that matter for <strong>risk and calibration</strong>, not just accuracy on a slide.
+        </p>
+      </div>
+
+      <div class="chapter-grid reveal">
+        <a class="chapter-card" href="kpi.html">
+          <div class="num">01</div>
+          <h3>The scoreboard</h3>
+          <p>Business KPIs, north-star metrics, and model performance vs baseline — the numbers we sell with.</p>
+          <div class="go">Open KPIs →</div>
+        </a>
+        <a class="chapter-card" href="story.html">
+          <div class="num">02</div>
+          <h3>Notebook vs product</h3>
+          <p>Persona, pain, and why MLOps wins on speed, trust, and auditability.</p>
+          <div class="go">Open story →</div>
+        </a>
+        <a class="chapter-card" href="platform.html">
+          <div class="num">03</div>
+          <h3>Platform &amp; code</h3>
+          <p>Architecture from config to registry to API — divide-and-conquer modules.</p>
+          <div class="go">See platform →</div>
+        </a>
+        <a class="chapter-card" href="proof.html">
+          <div class="num">04</div>
+          <h3>Proof &amp; trust</h3>
+          <p>Live Swagger, Streamlit, W&amp;B, CI/CD — evidence it runs for real.</p>
+          <div class="go">See proof →</div>
+        </a>
+        <a class="chapter-card" href="close.html">
+          <div class="num">05</div>
+          <h3>Ethics &amp; roadmap</h3>
+          <p>Honest limits, continuous data vision, and your 10′ video script.</p>
+          <div class="go">Close the loop →</div>
+        </a>
       </div>
     </header>
 
-    <section id="story">
-      <p class="section-kicker">01 · Business narrative</p>
-      <h2>Who this is for — and why calibration beats gut feel</h2>
-      <p class="section-intro">
-        We predict <strong>pre-match win probability</strong> for ATP tennis. Our audience is analysts, trading desks, and operators who need
-        <strong>repeatable, calibrated</strong> outputs — not one-off charts in a Jupyter cell. In sports and betting contexts,
-        <strong>log loss and Brier score</strong> matter as much as accuracy: probabilities you can stake against.
-      </p>
-      <div class="metrics">
-        <div class="metric"><b>65.3%</b><small>Accuracy (test)</small></div>
-        <div class="metric"><b>0.637</b><small>Log loss vs 12.7 baseline</small></div>
-        <div class="metric"><b>0.223</b><small>Brier vs 0.351 baseline</small></div>
-        <div class="metric"><b>0.706</b><small>ROC AUC (test)</small></div>
+    <section class="page-section reveal">
+      <p class="kicker">Why listen</p>
+      <h2>Three promises we can demonstrate</h2>
+      <div class="module-grid" style="margin-top: 1rem;">
+        <div class="module-pill"><strong>1.</strong> <strong>Same contract</strong> — Pydantic-validated JSON in; probability out. No “rerun cell 17.”</div>
+        <div class="module-pill"><strong>2.</strong> <strong>Promoted model</strong> — W&amp;B <code>prod</code> alias. We know exactly what ships.</div>
+        <div class="module-pill"><strong>3.</strong> <strong>Guardrails</strong> — 62 tests, ≥90% coverage gate, Docker parity with Render.</div>
       </div>
     </section>
 
-    <section id="compare">
-      <p class="section-kicker">02 · Notebook PoC vs MLOps product</p>
-      <h2>Higher business value — by design</h2>
-      <p class="section-intro">
-        A notebook is great for exploration. It is <em>not</em> a contract with production. Below is how we turn the same idea into something you could run daily as data refreshes.
-      </p>
-      <table class="compare-table">
-        <thead>
-          <tr>
-            <th>Dimension</th>
-            <th>Notebook-heavy setup</th>
-            <th>Our MLOps pipeline</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Reproducibility</td>
-            <td class="neg">Cell order, hidden state, “works on my machine”</td>
-            <td class="pos">Single entrypoint <code>python -m src.main</code>, locked env, tests</td>
-          </tr>
-          <tr>
-            <td>Model promotion</td>
-            <td class="neg">Which .pkl is “the” model?</td>
-            <td class="pos">W&amp;B registry + <code>prod</code> alias — explicit promotion</td>
-          </tr>
-          <tr>
-            <td>Consumption</td>
-            <td class="neg">Copy-paste or re-run cells</td>
-            <td class="pos">REST API + Streamlit — stakeholders self-serve</td>
-          </tr>
-          <tr>
-            <td>Change safety</td>
-            <td class="neg">Silent breakage</td>
-            <td class="pos">CI: black, flake8, pytest + ≥90% coverage</td>
-          </tr>
-          <tr>
-            <td>Deployment</td>
-            <td class="neg">Manual, ad hoc</td>
-            <td class="pos">Docker, Render, release-triggered deploy hook</td>
-          </tr>
-          <tr>
-            <td>Observability</td>
-            <td class="neg">Print statements</td>
-            <td class="pos">Structured logging, W&amp;B runs, Render logs</td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
-
-    <section id="architecture">
-      <p class="section-kicker">03 · System architecture</p>
-      <h2>One picture: config → pipeline → registry → API → UI</h2>
-      <p class="section-intro">
-        Everything flows from <code>config.yaml</code> and secrets in <code>.env</code>. Training is tracked in W&amp;B; serving pulls the production artifact; Streamlit calls the same API the rest of the world could use.
-      </p>
-      <div class="arch-flow">┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│ config.yaml │───>│  main.py    │───>│    W&amp;B      │───>│  api.py     │
-│ .env        │    │ orchestrator│    │  tracking   │    │  FastAPI    │
-└─────────────┘    │             │    │  registry   │    │ /health     │
-                   │ load_data   │    │  artifacts  │    │ /predict    │
-                   │ clean_data  │    └──────┬──────┘    └──────┬──────┘
-                   │ validate    │           │ prod             │
-                   │ features    │           │ alias            │
-                   │ train       │           ▼                  │
-                   │ evaluate    │    ┌─────────────┐    ┌──────▼──────┐
-                   │ infer       │    │  model      │    │   Render    │
-                   └─────────────┘    │  joblib     │    │   Docker    │
-                                      └─────────────┘    └──────┬──────┘
-                   ┌─────────────┐                              │
-                   │  app.py     │──────────────────────────────┘
-                   │  Streamlit  │        calls /predict
-                   └─────────────┘</div>
-    </section>
-
-    <section id="pipeline">
-      <p class="section-kicker">04 · Production code map</p>
-      <h2>Modules we ship — not slides, actual <code>src/</code></h2>
-      <p class="section-intro">Each piece has a single job. Together they form the pipeline your README documents end-to-end.</p>
-      <div class="grid-3">
-        <div class="card"><h3>main.py</h3><p>Orchestrator: W&amp;B init, full data flow.</p></div>
-        <div class="card"><h3>load → clean → validate</h3><p>Ingestion, standardisation, Pandera schema gate.</p></div>
-        <div class="card"><h3>features.py</h3><p>Leakage-aware features + sklearn ColumnTransformer recipe.</p></div>
-        <div class="card"><h3>train.py / evaluate.py</h3><p>Fit pipeline, metrics, baseline comparison, W&amp;B logging.</p></div>
-        <div class="card"><h3>infer.py</h3><p>Batch inference with a strict DataFrame contract.</p></div>
-        <div class="card"><h3>api.py</h3><p>FastAPI + Pydantic — no ML logic, only I/O contract.</p></div>
-        <div class="card"><h3>app.py</h3><p>Streamlit for humans: real players, surfaces, insights.</p></div>
-        <div class="card"><h3>logger.py</h3><p>Dual output (console + file), zero <code>print()</code>.</p></div>
-        <div class="card"><h3>notebooks/</h3><p>EDA imports <code>src/</code> — analysis stays aligned with prod.</p></div>
-      </div>
-    </section>
-
-    <section id="api">
-      <p class="section-kicker">05 · Real API contract</p>
-      <h2>Pydantic-validated JSON — the same shape every time</h2>
-      <p class="section-intro">
-        <code>GET /health</code> exposes load status. <code>POST /predict</code> accepts match features and returns class + probability.
-        OpenAPI docs are generated automatically (Swagger / ReDoc).
-      </p>
-      <pre class="code"><span class="kw">POST</span> /predict
-<span class="str">{
-  "surface": "Hard",
-  "tourney_level": "G",
-  "round": "F",
-  "p1_rank": 1.0,
-  "p2_rank": 10.0,
-  "p1_hand": "R",
-  "p2_hand": "L",
-  "rank_diff": -9.0,
-  "age_diff": -2.5,
-  "ht_diff": 5.0
-}</span>
-<span class="kw">→</span> { "prediction": 1, "probability": 0.73 }</pre>
-    </section>
-
-    <section id="live">
-      <p class="section-kicker">06 · Live systems</p>
-      <h2>Open these during your 10′ video</h2>
-      <p class="section-intro">Use Swagger to show “Try it out”; use Streamlit for the human story; use W&amp;B for lineage.</p>
-      <div class="grid-2">
-        <a class="link-tile" href="https://mlops-group8.streamlit.app" target="_blank" rel="noopener">
-          <strong>Streamlit UI</strong>
-          <span>https://mlops-group8.streamlit.app</span>
-        </a>
-        <a class="link-tile" href="https://one-mlops-kickoff-repo-1.onrender.com" target="_blank" rel="noopener">
-          <strong>API (Render)</strong>
-          <span>https://one-mlops-kickoff-repo-1.onrender.com</span>
-        </a>
-        <a class="link-tile" href="https://one-mlops-kickoff-repo-1.onrender.com/docs" target="_blank" rel="noopener">
-          <strong>Swagger UI</strong>
-          <span>…/docs — interactive OpenAPI</span>
-        </a>
-        <a class="link-tile" href="https://one-mlops-kickoff-repo-1.onrender.com/redoc" target="_blank" rel="noopener">
-          <strong>ReDoc</strong>
-          <span>…/redoc — readable reference</span>
-        </a>
-        <a class="link-tile" href="https://wandb.ai/bmazari-ieu2024-ie-university/tennis-atp-prediction" target="_blank" rel="noopener">
-          <strong>W&amp;B project</strong>
-          <span>Experiments, metrics, model artifacts</span>
-        </a>
-        <a class="link-tile" href="https://github.com/rayanmazari90/1-mlops-kickoff-repo" target="_blank" rel="noopener">
-          <strong>GitHub · CI badge</strong>
-          <span>PRs, Actions, Releases (v1.0.0)</span>
-        </a>
-      </div>
-    </section>
-
-    <section id="ui">
-      <p class="section-kicker">07 · Streamlit experience</p>
-      <h2>Same model — packaged for daily use</h2>
-      <p class="section-intro">
-        Preset ATP players (rankings, hands, heights, flags), surface and tournament context, calibrated probability display, and match insight copy — so a non-technical stakeholder can stress-test scenarios without Postman.
-      </p>
-      <div class="grid-2">
-        <div class="card"><h3>Business angle</h3><p>Compare favourites under different surfaces and rounds; use the UI as a “what-if” desk for pre-match narratives.</p></div>
-        <div class="card"><h3>Technical angle</h3><p>UI calls the deployed API — it is not a second, hidden model path.</p></div>
-      </div>
-    </section>
-
-    <section id="mlops">
-      <p class="section-kicker">08 · CI/CD &amp; governance</p>
-      <h2>How we avoid breaking production</h2>
-      <div class="grid-2">
-        <div class="card"><h3>CI (every PR)</h3><p>Black, Flake8, pytest with coverage ≥ 90%. W&amp;B runs offline in CI.</p></div>
-        <div class="card"><h3>CD</h3><p>Publishing a GitHub Release triggers the Render deploy hook — deployment is explicit.</p></div>
-        <div class="card"><h3>Branches</h3><p><code>feature/*</code> → <code>dev</code> → <code>main</code>; protected branches, review culture.</p></div>
-        <div class="card"><h3>Docker</h3><p>Same image idea locally and on Render; <code>render.yaml</code> in repo.</p></div>
-      </div>
-    </section>
-
-    <section id="observability">
-      <p class="section-kicker">09 · Observability</p>
-      <h2>Three places to look when something is wrong</h2>
-      <div class="grid-3">
-        <div class="card"><h3>logs/pipeline.log</h3><p>Training pipeline traceability on disk.</p></div>
-        <div class="card"><h3>W&amp;B</h3><p>Parameters, metrics, artifacts per run.</p></div>
-        <div class="card"><h3>Render logs</h3><p>API startup, model load, request errors.</p></div>
-      </div>
-    </section>
-
-    <section id="model">
-      <p class="section-kicker">10 · Model card (summary)</p>
-      <h2>Transparent limits — especially for betting narratives</h2>
-      <p class="section-intro">
-        RandomForest on rank, surface, round, hands, age/height diff; train 2018–2020; leakage controls (P1/P2 randomisation, no post-match stats). Stronger on hard courts; no head-to-head or injury data.
-      </p>
-      <div class="card">
-        <h3>Ethical positioning</h3>
-        <p>Decision support, not autonomous betting. Combine outputs with domain knowledge — exactly what a serious desk would require.</p>
-      </div>
-    </section>
-
-    <section id="roadmap">
-      <p class="section-kicker">11 · Continuous data — honest roadmap</p>
-      <h2>What “daily use” looks like next</h2>
-      <p class="section-intro">The product you have today is the <strong>plumbing</strong>. Plugging in daily odds feeds, scheduled retrains, and drift monitors is the natural extension — because the API and registry are already there.</p>
-      <ul class="clean">
-        <li><strong>Scheduled pipeline</strong> — nightly or weekly retrain as new ATP CSVs land.</li>
-        <li><strong>Data versioning</strong> — treat incoming seasons as versioned artifacts (W&amp;B or DVC-style).</li>
-        <li><strong>Monitoring</strong> — distribution checks on ranks/surfaces; alert before silent degradation.</li>
-        <li><strong>API consumers</strong> — internal dashboards or risk tools calling <code>/predict</code> at scale.</li>
-      </ul>
-    </section>
-
-    <section id="video">
-      <p class="section-kicker">12 · 10′ video (no script reading)</p>
-      <h2>Suggested beats — speak from memory</h2>
-      <div class="grid-2">
-        <div class="card"><h3>~1 min</h3><p>Problem: need calibrated, repeatable pre-match probabilities for operators.</p></div>
-        <div class="card"><h3>~2 min</h3><p>Notebook vs MLOps: use this page’s comparison table as your outline only.</p></div>
-        <div class="card"><h3>~3 min</h3><p>Demo: Swagger try-out + Streamlit scenario + W&amp;B run lineage.</p></div>
-        <div class="card"><h3>~2 min</h3><p>Governance: CI, Docker, release deploy, logging.</p></div>
-        <div class="card"><h3>~2 min</h3><p>Ethics, limitations, roadmap for continuous data.</p></div>
-      </div>
-    </section>
+    <div class="pager">
+      <span class="muted">Multipage pitch — one chapter per idea, not one endless scroll.</span>
+      <a href="kpi.html">Next: KPIs →</a>
+    </div>
 
     <footer class="site-footer">
       <p>
-        <strong>Group 8</strong> — Rayane Boumediene Mazari, Sacha Huberty, Shreya Jha, Smaragda Apostolou, Marco De Palma, Pipe ·
-        MsC Business Analytics &amp; Data Science, IE University.
-      </p>
-      <p>
-        Repository: <a href="https://github.com/rayanmazari90/1-mlops-kickoff-repo" target="_blank" rel="noopener">github.com/rayanmazari90/1-mlops-kickoff-repo</a> ·
-        Full documentation: <code>README.md</code>
+        <a href="https://github.com/rayanmazari90/1-mlops-kickoff-repo" target="_blank" rel="noopener">Repository</a> ·
+        Full technical write-up: <code>README.md</code> ·
+        <a href="VIDEO_SCRIPT.md">VIDEO_SCRIPT.md</a> (10-minute delivery)
       </p>
     </footer>
   </div>
+  <script src="assets/app.js" defer></script>
 </body>
 </html>
