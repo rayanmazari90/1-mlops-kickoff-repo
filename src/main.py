@@ -13,13 +13,17 @@ Educational Goal:
 - Pipeline contract (inputs and outputs): Execution entry point that reads
   configuration and orchestrates artifacts.
 
-TODO: Replace print statements with standard library logging in a later session
 TODO: Any temporary or hardcoded variable or parameter will be imported
       from config.yml in a later session
 """
 
+import logging
 import os
 from pathlib import Path
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
 
 import mlflow
 import pandas as pd
@@ -36,10 +40,10 @@ from src.validate import validate_dataframe
 
 
 def main(config_path: str = "config.yaml"):
-    print("=== Starting MLOps Pipeline ===")  # TODO: replace with logging later
+    logger.info("=== Starting MLOps Pipeline ===")
 
     # 1. Load config and fail fast
-    print("\n--- Load Configuration ---")
+    logger.info("\n--- Load Configuration ---")
     config_path = Path(config_path)
     if not config_path.exists():
         raise FileNotFoundError(f"Configuration file not found: {config_path}")
@@ -74,7 +78,7 @@ def main(config_path: str = "config.yaml"):
     download_if_missing = config.get("dataset", {}).get("download_if_missing", True)
 
     # Create directories
-    print("\n--- Setup Directories ---")
+    logger.info("\n--- Setup Directories ---")
     raw_dir.mkdir(parents=True, exist_ok=True)
     processed_dir.mkdir(parents=True, exist_ok=True)
     models_dir.mkdir(parents=True, exist_ok=True)
@@ -99,7 +103,7 @@ def main(config_path: str = "config.yaml"):
 
     with mlflow.start_run(run_name="batch_pipeline_run"):
         # 2. Load
-        print("\n--- Load Data ---")
+        logger.info("\n--- Load Data ---")
         df_raw = load_raw_data(
             raw_dir=raw_dir,
             base_url=base_url,
@@ -108,7 +112,7 @@ def main(config_path: str = "config.yaml"):
         )
 
         # 3. Clean
-        print("\n--- Clean Data ---")
+        logger.info("\n--- Clean Data ---")
         df_clean = clean_dataframe(df_raw, target_column)
 
         # Save processed CSV for audit
@@ -116,11 +120,11 @@ def main(config_path: str = "config.yaml"):
         save_csv(df_clean, clean_path)
 
         # 4. Validate
-        print("\n--- Validate Data ---")
+        logger.info("\n--- Validate Data ---")
         validate_dataframe(df_clean, config=config)
 
         # 5. Early Split by seasons
-        print("\n--- Early Train/Val/Test Split ---")
+        logger.info("\n--- Early Train/Val/Test Split ---")
         if "tourney_date" in df_clean.columns:
             year_series = pd.to_datetime(
                 df_clean["tourney_date"], format="mixed"
@@ -152,7 +156,7 @@ def main(config_path: str = "config.yaml"):
             )
 
         # 6. Feature Engineering
-        print("\n--- Build Features ---")
+        logger.info("\n--- Build Features ---")
         X_train, y_train = build_features(df_clean_train)
         X_val, y_val = (
             build_features(df_clean_val) if not df_clean_val.empty else (None, None)
@@ -176,13 +180,13 @@ def main(config_path: str = "config.yaml"):
                 )
 
         # 7. Build Feature Recipe (PreProcessor)
-        print("\n--- Build Preprocessor ---")
+        logger.info("\n--- Build Preprocessor ---")
         preprocessor = get_feature_preprocessor(
             numeric_cols=numeric_pipeline, categorical_cols=categorical_pipeline
         )
 
         # 8. Train Model
-        print("\n--- Train Pipeline ---")
+        logger.info("\n--- Train Pipeline ---")
         pipeline = train_model(X_train, y_train, preprocessor, config.get("model", {}))
 
         # Save Model Artifact
@@ -190,19 +194,19 @@ def main(config_path: str = "config.yaml"):
         save_model(pipeline, model_path)
 
         # 9. Evaluate
-        print("\n--- Evaluate Model ---")
+        logger.info("\n--- Evaluate Model ---")
         if X_val is not None and len(X_val) > 0:
-            print("Evaluating on Validation Set:")
+            logger.info("Evaluating on Validation Set:")
             val_metrics = evaluate_model(pipeline, X_val, y_val, problem_type)
-            print(f"Val Metrics: {val_metrics}")
+            logger.info(f"Val Metrics: {val_metrics}")
 
         if X_test is not None and len(X_test) > 0:
-            print("Evaluating on Test Set:")
+            logger.info("Evaluating on Test Set:")
             test_metrics = evaluate_model(pipeline, X_test, y_test, problem_type)
-            print(f"Test Metrics: {test_metrics}")
+            logger.info(f"Test Metrics: {test_metrics}")
 
         # 10. Inference
-        print("\n--- Run Inference ---")
+        logger.info("\n--- Run Inference ---")
         if X_infer is not None and len(X_infer) > 0:
             predictions_path = reports_dir / "predictions.csv"
             run_inference(pipeline, X_infer, save_path=str(predictions_path))
@@ -212,7 +216,7 @@ def main(config_path: str = "config.yaml"):
                 "Skipping inference."
             )
 
-    print("\n=== Pipeline Execution Complete ===")
+    logger.info("\n=== Pipeline Execution Complete ===")
 
 
 if __name__ == "__main__":
