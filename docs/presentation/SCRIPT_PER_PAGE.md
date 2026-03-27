@@ -1,125 +1,542 @@
-# Read-aloud script — one block per presentation page
+# Video script — read aloud, page by page
 
-**How to use this file:** Each section matches exactly one HTML file in this folder. Read the **Script** paragraphs in order while that page is on screen. Approximate times assume a calm presentation pace (~130 words per minute).
+**Matches these files in order:** `index.html` → `kpi.html` → `story.html` → `platform.html` → `proof.html` → `close.html`
 
-**Note on course rules:** If your assignment still says you must *not* read a script on camera, treat this as your rehearsal text: read it several times, then record while **paraphrasing** so delivery stays natural. If reading aloud is allowed, you can use this verbatim.
+**How to read:** Say each line in order. One line = one breath or one short phrase. Pause at blank lines between blocks if you want a natural rhythm.
 
----
-
-## Page: `index.html` — Start (~1 minute 30)
-
-**Script:**
-
-Welcome. We are Group Eight, and this is our production MLOps story for ATP tennis match prediction.
-
-Most teams stop at a notebook: they train a model once, save a pickle file, and hope nobody asks for the same result twice. We did not stop there. We built a calibrated prediction service that behaves like a product: versioned code, a promoted model in a registry, a real REST API, a Streamlit interface for non-technical users, and automated tests on every change.
-
-Our headline message is simple: we care about **probability quality**, not only accuracy on a slide. Pre-match analytics for sports and trading-style workflows need **calibrated** win probabilities — numbers you can compare to each other and to reality. That is why our evaluation leads with log loss and Brier score, not just who got more picks right.
-
-On this page we make three promises you can hold us to. First, every prediction goes through the same **Pydantic contract** — valid JSON in, probability out — no “rerun cell seventeen.” Second, production uses one **explicitly promoted** model from Weights and Biases with the `prod` alias. Third, **guardrails**: more than sixty tests and a ninety-percent coverage gate on our core source code, plus Docker so what we run locally matches what runs on Render.
-
-Use the chapter cards to follow the rest of the story: KPIs, narrative, platform, proof, and closing ethics and roadmap.
+**Total:** about twelve to thirteen minutes plus your live demo on `proof.html`. To fit ten minutes, skip the lines marked *(optional — shorten)* in KPI and Story.
 
 ---
 
-## Page: `kpi.html` — KPIs (~2 minutes 30)
+# PAGE 1 — `index.html` (Start)
 
-**Script:**
+**Approx. 1 minute 30 seconds**
 
-This chapter is the scoreboard — how we talk to business stakeholders, not only to data scientists.
+```
+NARRATOR
 
-If you cannot measure it, you cannot manage it. In pre-match settings, **accuracy alone is a vanity metric**. Desks and analysts care whether probabilities are **well calibrated**: do predicted sixty-percent chances actually happen six times out of ten over many matches? That is why **log loss** and **Brier score** are our north-star metrics, alongside ROC AUC.
+Welcome.
 
-We structured five **business KPIs** on this page. First, **calibration quality**: we need probabilities that match reality, not just directionally correct labels. We deliver that by optimising and reporting log loss and Brier against a strong baseline. Second, **decision latency**: the answer must arrive in seconds, not after someone finds the right notebook. Our REST API and Streamlit app make that possible. Third, **model governance**: there must be exactly one production model, with traceable lineage. Weights and Biases holds our artifact, and the API loads the `prod` alias on startup. Fourth, **change confidence**: when we change code, we must not silently break predictions. Continuous integration runs Black, Flake8, and pytest with a coverage floor. Fifth, **operational audit trail**: when something fails, we know where to look — structured logs, W and B runs, and Render service logs.
+We are Group Eight.
 
-Now the numbers on the test set, compared to the simplest serious baseline: always pick the higher-ranked player. Our model reaches about **sixty-five point three percent** accuracy versus **sixty-four point nine** for the baseline — a small edge on accuracy. The real story is calibration: **log loss** drops to about **zero point six three seven** compared to **twelve point six six five** for the baseline. **Brier score** improves to about **zero point two two three** versus **zero point three five one**. **ROC AUC** is about **zero point seven zero six** versus **zero point six four nine**.
+This is our production MLOps project for ATP tennis match prediction.
 
-In one sentence for the video: we do not only beat the rank heuristic on accuracy by a hair — we crush it on **probability quality**, which is what you need when outcomes are uncertain and stakes are asymmetric.
+Most teams stop at a notebook.
+They train once.
+They save a file.
+They hope nobody asks for the same answer twice.
 
----
+We did not stop there.
 
-## Page: `story.html` — Story (~2 minutes 15)
+We built a service that behaves like a product.
 
-**Script:**
+Versioned code.
 
-This chapter is the business story: from the lab notebook to the operations desk.
+A promoted model in a registry.
 
-Our persona is clear: a sports analyst, a trading-adjacent desk, or a product owner who needs **repeatable** pre-match win probabilities — not a chart from one analyst’s laptop on Tuesday afternoon. The conflict is simple: notebooks **explore**; they do not **govern**.
+A real REST API.
 
-On the left, the notebook-heavy world: fragile cell order, “works on my machine,” unclear which pickle file is production, no strict JSON contract. Stakeholders cannot self-serve; every question waits on a data scientist. The business cost is latency, key-person risk, and decisions that are hard to audit.
+A Streamlit app for people who do not write Python.
 
-On the right, our MLOps product: one command runs the full pipeline; Pydantic validates every API request; the model is promoted through the registry; Streamlit and Swagger let anyone reproduce the same prediction. The business value is **trust**, **speed**, and a **paper trail** when someone asks why the model said what it said.
+And automated tests on every change.
 
-Our narrative arc has four beats. Act One: gut feel and ad-hoc notebooks do not scale; calibration matters more than a flashy accuracy slide. Act Two: we engineered the same ATP prediction into modules, tests, and a deployed API — so “model” means one governed artifact. Act Three: live OpenAPI docs, Streamlit, and W and B lineage — evidence, not slides. Act Four: we state limitations honestly and position the system as **decision support**, especially where betting or risk is involved.
+Our headline is simple.
 
-Exploration still lives in notebooks — our EDA notebook imports from production modules. Production lives behind an API with tests. We kept the science and added the receipts.
+We care about probability quality.
+Not only accuracy on a slide.
 
----
+For sports and trading-style workflows,
+you need calibrated probabilities.
 
-## Page: `platform.html` — Platform (~2 minutes)
+Numbers you can compare to each other and to reality.
 
-**Script:**
+That is why we lead with log loss and Brier score.
 
-This chapter is divide and conquer: how the code is organised so one team can evolve without chaos.
+We make three promises.
 
-Everything starts from **configuration** and **secrets**: `config.yaml` for behaviour, environment variables for API keys. The orchestrator is `main.py`: it runs load, clean, validate, features, train, evaluate, and inference in order, and it initialises Weights and Biases in one place.
+First.
+Every prediction uses the same contract.
+Valid JSON in.
+Probability out.
+No “rerun cell seventeen.”
 
-Downstream, the registry stores the trained model as an artifact. The **production** alias points to what we trust. The FastAPI application in `api.py` loads that artifact when the container starts — it does **not** reimplement machine learning; it only enforces the input and output contract. The same predictions power Streamlit in `app.py`, which calls the deployed service so there is no second hidden model path.
+Second.
+Production uses one model.
+Promoted in Weights and Biases under the prod alias.
 
-Walk the module list with me. `load_data` ingests ATP CSVs. `clean_data` standardises names and dates. `validate` uses Pandera to fail fast on bad data. `features` builds leakage-aware features and the sklearn recipe. `train` and `evaluate` fit the model and compare to the rank baseline. `infer` does batch scoring. `logger` gives us dual logging with no print statements in production code.
+Third.
+Guardrails.
+More than sixty tests.
+At least ninety percent coverage on our core code.
+Docker so local matches Render.
 
-The API contract in plain language: **POST** to `/predict` with match features such as surface, tournament level, round, ranks, and optional hand and difference fields — you receive a class label and a **probability**. **GET** `/health` tells you whether the model loaded successfully. OpenAPI generates Swagger and ReDoc automatically — that is our technical sales brochure for anyone who wants to integrate.
+On the next pages we go deeper.
+KPIs.
+Story.
+Platform.
+Proof.
+And we close with ethics and roadmap.
 
----
-
-## Page: `proof.html` — Proof (~2 minutes 30, plus live demo time)
-
-**Script:**
-
-Slides claim; URLs prove. This chapter is evidence that the system runs in the wild.
-
-First, open the **Streamlit** application. That is our human-facing layer: real player presets, surfaces, tournament context, and calibrated probabilities — so a stakeholder can stress-test scenarios without writing code.
-
-Second, open **Swagger** at the `/docs` path. This is the same contract a trading tool or internal dashboard would use: **Try it out**, send a JSON body with surface, tournament level, round, and ranks, and read back the probability. That is live inference, not a screenshot.
-
-Third, **ReDoc** gives a clean read-only reference for assessors who prefer documentation over interactive calls.
-
-Fourth, **GET `/health`** confirms whether the model loaded — important when the container wakes up on a free-tier host.
-
-Fifth, the **Weights and Biases** project shows every run: hyperparameters, metrics, and artifacts — including which build is tied to `prod`.
-
-Sixth, **GitHub Actions** shows our continuous integration: formatting, linting, and the full test suite on every push and pull request.
-
-**[PAUSE — LIVE DEMO: execute one POST in Swagger, then show one prediction in Streamlit. If the service is cold-starting, say so briefly and use a short recording.]**
-
-On trust, quote these numbers: **sixty-two** automated tests, coverage enforced at **at least ninety percent** on core `src` modules, **Docker** parity with Render, deployment triggered by a **GitHub Release**, and **three** observability channels: local log file, W and B, and Render logs.
-
----
-
-## Page: `close.html` — Close (~1 minute 45)
-
-**Script:**
-
-We land the plane with honesty and a forward path.
-
-Our model card is explicit about what we do **not** claim: we do not use in-match dynamics, deep head-to-head history, or injury models. Performance can drift as the tour evolves. Training data is hard-court heavy, so edge cases on clay or grass deserve caution. We position this system as **decision support**: combine outputs with domain knowledge and internal risk policy — especially in betting-adjacent use cases.
-
-The roadmap for **continuous data** is practical, not vaporware. We can schedule the pipeline when new seasons appear. Every promoted model can stay tied to a W and B run and a Git commit. We can monitor input distributions for drift before accuracy collapses. Any system that can POST JSON can consume `/predict` at scale.
-
-Thank you for your attention. Group Eight — Rayane Boumediene Mazari, Sacha Huberty, Shreya Jha, Smaragda Apostolou, Marco De Palma, and Pipe — IE University, Master in Business Analytics and Data Science, MLOps twenty twenty-six. Our repository and full documentation are on GitHub; this presentation walks chapter by chapter from KPIs to proof. We are happy to take questions.
+Thank you.
+Turn the page to KPIs.
+```
 
 ---
 
-## Total timing
+# PAGE 2 — `kpi.html` (KPIs)
 
-| Page            | Approx. read time |
-|-----------------|-------------------|
-| `index.html`    | ~1:30             |
-| `kpi.html`      | ~2:30             |
-| `story.html`    | ~2:15             |
-| `platform.html` | ~2:00             |
-| `proof.html`    | ~2:30 + demo      |
-| `close.html`    | ~1:45             |
-| **Subtotal**    | **~12:30** read + demo |
+**Approx. 2 minutes 30 seconds**
 
-If you must fit **ten minutes**, shorten `kpi.html` and `story.html` by skipping repeated numbers, or run `proof.html` demo-only with a shorter spoken intro.
+```
+NARRATOR
+
+This page is our scoreboard.
+
+How we talk to business people.
+Not only to data scientists.
+
+If you cannot measure it, you cannot manage it.
+
+Accuracy alone is a vanity metric here.
+
+What matters is calibration.
+
+Do sixty-percent predictions happen six times out of ten, over many matches?
+
+That is why log loss and Brier score are our north stars.
+Along with ROC AUC.
+
+We track five business KPIs.
+
+One.
+Calibration quality.
+Probabilities must match reality.
+We optimise log loss and Brier against a strong baseline.
+
+Two.
+Decision latency.
+The answer in seconds.
+Not after someone finds a notebook.
+The API and Streamlit do that.
+
+Three.
+Model governance.
+Exactly one production model.
+Traceable lineage.
+Weights and Biases holds the artifact.
+The API loads prod on startup.
+
+Four.
+Change confidence.
+New code must not silently break predictions.
+CI runs Black, Flake8, and pytest with a coverage floor.
+
+Five.
+Operational audit trail.
+When something fails, we know where to look.
+Logs.
+W and B.
+Render.
+
+Now the numbers.
+Test set.
+Baseline is simple.
+Always pick the higher-ranked player.
+
+Our accuracy is about sixty-five point three percent.
+
+The baseline is about sixty-four point nine.
+
+A small edge.
+
+The real story is calibration.
+
+Log loss for our model is about zero point six three seven.
+
+For the baseline it is about twelve point six six five.
+
+Brier score for us is about zero point two two three.
+
+For the baseline about zero point three five one.
+
+ROC AUC for us is about zero point seven zero six.
+
+For the baseline about zero point six four nine.
+
+So we do not only beat the rank rule on accuracy by a hair.
+
+We crush it on probability quality.
+
+That is what you need when stakes are asymmetric.
+
+Turn the page to Story.
+```
+
+*(optional — shorten)* Omit the five KPI bullets and keep only: calibration, latency, governance, CI, audit — one sentence each.
+
+---
+
+# PAGE 3 — `story.html` (Story)
+
+**Approx. 2 minutes 15 seconds**
+
+```
+NARRATOR
+
+This page is the business story.
+
+From the lab notebook to the operations desk.
+
+Who is this for?
+
+A sports analyst.
+
+A trading-adjacent desk.
+
+A product owner who needs the same answer every day.
+
+Not a chart from one laptop on Tuesday afternoon.
+
+Here is the conflict.
+
+Notebooks explore.
+
+They do not govern.
+
+On the notebook side.
+
+Cell order is fragile.
+
+It works on my machine.
+
+Which pickle file is production?
+Nobody knows.
+
+No strict JSON contract.
+
+Stakeholders cannot self-serve.
+
+Every question waits on a data scientist.
+
+That costs time.
+That costs trust.
+That is hard to audit.
+
+On our side.
+
+One command runs the full pipeline.
+
+Pydantic validates every API call.
+
+The model is promoted in the registry.
+
+Streamlit and Swagger let anyone get the same prediction.
+
+The value is trust.
+Speed.
+And a paper trail.
+
+Our story has four acts.
+
+Act one.
+Gut feel does not scale.
+Calibration beats a flashy accuracy slide.
+
+Act two.
+We put the same ATP model into modules, tests, and an API.
+
+One governed artifact.
+
+Act three.
+Live docs.
+Streamlit.
+W and B.
+Evidence.
+Not slides.
+
+Act four.
+We admit limits.
+We call this decision support.
+Especially where betting or risk matters.
+
+Exploration still lives in notebooks.
+Our EDA notebook imports from production code.
+
+Production lives behind an API with tests.
+
+We kept the science.
+
+We added the receipts.
+
+Turn the page to Platform.
+```
+
+---
+
+# PAGE 4 — `platform.html` (Platform)
+
+**Approx. 2 minutes**
+
+```
+NARRATOR
+
+This page is divide and conquer.
+
+How we organised the code.
+
+Everything starts with config and secrets.
+
+config.yaml drives behaviour.
+
+Environment variables hold API keys.
+
+main.py is the orchestrator.
+
+It runs load, clean, validate, features, train, evaluate, and inference.
+
+Weights and Biases initialises in one place.
+
+The registry stores the trained model.
+
+The prod alias is what we trust.
+
+api.py loads that model when the container starts.
+
+It does not reimplement machine learning.
+
+It only enforces inputs and outputs.
+
+app.py is Streamlit.
+
+It calls the deployed service.
+
+There is no second hidden model.
+
+Module by module.
+
+load_data pulls ATP CSVs.
+
+clean_data standardises names and dates.
+
+validate uses Pandera to fail fast on bad data.
+
+features builds leakage-aware inputs and the sklearn recipe.
+
+train and evaluate fit the model and compare to the rank baseline.
+
+infer does batch scoring.
+
+logger writes to console and file.
+
+No print statements in production.
+
+The API in plain words.
+
+POST to slash predict.
+
+You send surface, tournament level, round, ranks, and optional fields.
+
+You get a label and a probability.
+
+GET slash health tells you if the model loaded.
+
+Swagger and ReDoc come free from OpenAPI.
+
+That is our brochure for integrators.
+
+Turn the page to Proof.
+```
+
+---
+
+# PAGE 5 — `proof.html` (Proof)
+
+**Approx. 2 minutes 30 seconds speaking, plus your demo**
+
+```
+NARRATOR
+
+This page is proof.
+
+Slides claim.
+
+URLs prove.
+
+First.
+Open Streamlit.
+
+That is the human layer.
+
+Real players.
+Surfaces.
+Tournament context.
+Calibrated probabilities.
+
+No code required.
+
+Second.
+Open Swagger at slash docs.
+
+That is the same contract a real system would call.
+
+Try it out.
+
+Send JSON.
+
+Read back the probability.
+
+That is live inference.
+
+Third.
+ReDoc at slash redoc.
+
+Clean reference for anyone grading the work.
+
+Fourth.
+GET slash health.
+
+See if the model loaded.
+
+Useful when the free tier wakes up cold.
+
+Fifth.
+Open our Weights and Biases project.
+
+Runs.
+Metrics.
+Artifacts.
+
+Including what is tied to prod.
+
+Sixth.
+Open GitHub Actions.
+
+CI on every push and pull request.
+
+```
+
+**[STOP READING. DO YOUR LIVE DEMO NOW.]**
+
+*Say this while you click:*
+
+```
+NARRATOR
+
+I will run one prediction in Swagger.
+
+Then I will show the same idea in Streamlit.
+
+```
+
+*(If the API is slow, say: “Free tier cold start — here is a short clip instead.”)*
+
+**[RESUME READING AFTER DEMO.]**
+
+```
+NARRATOR
+
+For trust, remember these numbers.
+
+Sixty-two automated tests.
+
+Coverage at least ninety percent on core src.
+
+Docker matches Render.
+
+Deploy happens when we publish a GitHub Release.
+
+Three places to debug.
+
+Local log file.
+
+W and B.
+
+Render logs.
+
+Turn the page to Close.
+```
+
+---
+
+# PAGE 6 — `close.html` (Close)
+
+**Approx. 1 minute 45 seconds**
+
+```
+NARRATOR
+
+We close with honesty.
+
+Our model card is clear about limits.
+
+We do not use in-match play-by-play.
+
+We do not model deep head-to-head history.
+
+We do not model injuries.
+
+The tour changes.
+Performance can drift.
+
+We trained heavily on hard courts.
+Clay and grass need caution.
+
+We position this as decision support.
+
+Combine the model with domain knowledge and risk policy.
+
+Especially in betting-related contexts.
+
+Looking forward.
+
+We can schedule the pipeline when new data arrives.
+
+Every promoted model can link to a W and B run and a Git commit.
+
+We can watch inputs for drift before accuracy collapses.
+
+Anything that can POST JSON can call slash predict at scale.
+
+Thank you for your attention.
+
+We are Group Eight.
+
+Rayane Boumediene Mazari.
+
+Sacha Huberty.
+
+Shreya Jha.
+
+Smaragda Apostolou.
+
+Marco De Palma.
+
+And Pipe.
+
+IE University.
+
+Master in Business Analytics and Data Science.
+
+MLOps twenty twenty-six.
+
+Everything is on GitHub with a full README.
+
+This deck walks page by page with the script you are reading.
+
+We are happy to take questions.
+```
+
+---
+
+## Timing cheat sheet
+
+| Page file       | Block above      | ~Time      |
+|----------------|------------------|------------|
+| `index.html`   | PAGE 1           | ~1:30      |
+| `kpi.html`     | PAGE 2           | ~2:30      |
+| `story.html`   | PAGE 3           | ~2:15      |
+| `platform.html`| PAGE 4           | ~2:00      |
+| `proof.html`   | PAGE 5 + demo    | ~2:30 + demo |
+| `close.html`   | PAGE 6           | ~1:45      |
+
+**To reach ~10 minutes:** use the *(optional — shorten)* note on PAGE 2, speak PAGE 5 demo section in under one minute, and trim a few repeated lines on PAGE 3.
