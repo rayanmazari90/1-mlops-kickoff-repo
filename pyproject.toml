@@ -12,7 +12,7 @@ requires-python = ">=3.9"
 dependencies = [
     "pandas",
     "numpy",
-    "scikit-learn",
+    "scikit-learn>=1.6,<1.7",
     "joblib",
     "pyyaml",
     "requests",
