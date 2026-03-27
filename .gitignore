@@ -8,6 +8,7 @@ __pycache__/
 .venv/
 env/
 venv/
+test_env/
 
 # Tooling
 .pytest_cache/
@@ -17,10 +18,16 @@ dist/
 build/
 *.egg-info/
 
-# MLflow
+# MLflow (legacy)
 mlflow.db
 mlruns.db
 mlruns/
+
+# Weights & Biases
+wandb/
+
+# Logs
+logs/
 
 # OS and IDE
 .DS_Store

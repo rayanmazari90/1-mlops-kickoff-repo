@@ -78,3 +78,7 @@ features:
     - p2_hand
     
 problem_type: classification
+
+wandb:
+  project: tennis-atp-prediction
+  entity: ""
