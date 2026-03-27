@@ -29,12 +29,17 @@ def _set_wandb_offline(monkeypatch):
 
 @pytest.fixture
 def client():
+    original_startup = app.router.on_startup
+    app.router.on_startup = []
     api.MODEL = FakeModel()
     api.CONFIG = {"problem_type": "classification"}
-    with TestClient(app, raise_server_exceptions=False) as c:
-        yield c
-    api.MODEL = None
-    api.CONFIG = None
+    try:
+        with TestClient(app, raise_server_exceptions=False) as c:
+            yield c
+    finally:
+        app.router.on_startup = original_startup
+        api.MODEL = None
+        api.CONFIG = None
 
 
 def _no_startup_client():
@@ -216,3 +221,37 @@ def test_predict_with_explicit_rank_diff(client):
     }
     resp = client.post("/predict", json=payload)
     assert resp.status_code == 200
+
+
+def test_startup_loads_local_model(tmp_path, monkeypatch):
+    """Test the full startup event with a local model available."""
+    monkeypatch.chdir(tmp_path)
+
+    models_dir = tmp_path / "models"
+    models_dir.mkdir()
+    from sklearn.linear_model import LogisticRegression
+
+    joblib.dump(LogisticRegression(), models_dir / "model.joblib")
+
+    cfg = {"paths": {"models_dir": "models"}}
+    with open(tmp_path / "config.yaml", "w") as f:
+        yaml.dump(cfg, f)
+
+    api.MODEL = None
+    with TestClient(app, raise_server_exceptions=False) as c:
+        resp = c.get("/health")
+
+    assert resp.status_code == 200
+    assert resp.json()["model_loaded"] is True
+
+
+def test_startup_no_model_available(tmp_path, monkeypatch):
+    """Test the full startup event when no model exists anywhere."""
+    monkeypatch.chdir(tmp_path)
+    api.MODEL = None
+
+    with TestClient(app, raise_server_exceptions=False) as c:
+        resp = c.get("/health")
+
+    assert resp.status_code == 200
+    assert resp.json()["model_loaded"] is False
