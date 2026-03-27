@@ -185,6 +185,15 @@ We use **Weights & Biases** for experiment tracking, metric logging, and model r
 
 Fields `rank_diff`, `age_diff`, `ht_diff`, `p1_hand`, `p2_hand` are optional — sensible defaults are applied.
 
+### Interactive API Documentation
+
+FastAPI auto-generates interactive documentation:
+
+- **Swagger UI:** `http://localhost:8000/docs`
+- **ReDoc:** `http://localhost:8000/redoc`
+
+When deployed on Render, replace `localhost:8000` with the public Render URL.
+
 ---
 
 ## 7. Deployment
