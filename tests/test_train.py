@@ -1,14 +1,15 @@
 import pandas as pd
+import wandb
+from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-from sklearn.compose import ColumnTransformer
-import mlflow
 
 from src.train import train_model
 
 
-def test_train_model_creates_pipeline():
-    # Arrange
+def test_train_model_creates_pipeline(monkeypatch):
+    monkeypatch.setenv("WANDB_MODE", "offline")
+
     X_train = pd.DataFrame({"feature1": [1, 2, 3, 4], "feature2": [10, 20, 30, 40]})
     y_train = pd.Series([0, 1, 0, 1])
 
@@ -22,13 +23,10 @@ def test_train_model_creates_pipeline():
         "random_seed": 42,
     }
 
-    # Act
-    with mlflow.start_run():
-        pipeline = train_model(X_train, y_train, preprocessor, model_config)
+    wandb.init(mode="offline", project="test")
+    pipeline = train_model(X_train, y_train, preprocessor, model_config)
+    wandb.finish()
 
-    # Assert
     assert isinstance(pipeline, Pipeline)
     assert hasattr(pipeline, "predict")
-
-    # Check that it fits properly
     assert hasattr(pipeline.named_steps["model"], "classes_")
