@@ -24,7 +24,8 @@ We ship a **multipage static pitch** (divide-and-conquer chapters) with animatio
 | Platform | [`docs/presentation/platform.html`](docs/presentation/platform.html) | Architecture ASCII, `src/` map, API soundbite |
 | Proof | [`docs/presentation/proof.html`](docs/presentation/proof.html) | Live Swagger, Streamlit, W&amp;B, CI |
 | Close | [`docs/presentation/close.html`](docs/presentation/close.html) | Ethics, roadmap, script pointer |
-| Script | [`docs/presentation/VIDEO_SCRIPT.md`](docs/presentation/VIDEO_SCRIPT.md) | Minute-by-minute delivery outline |
+| Read-aloud script | [`docs/presentation/SCRIPT_PER_PAGE.md`](docs/presentation/SCRIPT_PER_PAGE.md) | **Full spoken lines per HTML page** (index → close), with timings |
+| Beats / outline | [`docs/presentation/VIDEO_SCRIPT.md`](docs/presentation/VIDEO_SCRIPT.md) | Shorter minute-by-minute notes and taboos |
 
 **Assets:** [`docs/presentation/assets/styles.css`](docs/presentation/assets/styles.css), [`docs/presentation/assets/app.js`](docs/presentation/assets/app.js)
 

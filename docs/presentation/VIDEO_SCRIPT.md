@@ -1,6 +1,8 @@
 # 10-minute business video — talking points (Group 8)
 
-**Purpose:** Memory scaffolding for your recording. Your course rule says **do not read a script verbatim on camera** — use this as **beats and soundbites**, then speak in your own words while the multipage site (`index.html` → `close.html`) is on screen.
+**Full read-aloud script (per HTML page):** see **[`SCRIPT_PER_PAGE.md`](SCRIPT_PER_PAGE.md)** — continuous lines you can read while each page is displayed.
+
+**Purpose (this file):** Compact **beats and soundbites** if you prefer bullet-style prep. If your course rule says **do not read a script verbatim on camera**, rehearse with [`SCRIPT_PER_PAGE.md`](SCRIPT_PER_PAGE.md) until internalised, then paraphrase on camera.
 
 **Total time:** ~10:00  
 **Recommended layout:** Split screen or picture-in-picture: your face + browser (site + Swagger + Streamlit).
