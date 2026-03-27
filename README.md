@@ -12,6 +12,16 @@
 | **API Docs (Swagger)** | [https://one-mlops-kickoff-repo-1.onrender.com/docs](https://one-mlops-kickoff-repo-1.onrender.com/docs) |
 | **W&B Dashboard** | [https://wandb.ai/bmazari-ieu2024-ie-university/tennis-atp-prediction](https://wandb.ai/bmazari-ieu2024-ie-university/tennis-atp-prediction) |
 
+### Business presentation website
+
+We ship a **static narrative site** (business value vs notebook PoC, architecture, API contract, live links, CI/CD, model card summary, video outline) for demos and coursework:
+
+- **Path in repo:** [`docs/presentation/index.html`](docs/presentation/index.html)
+- **Open locally:** double-click the file or run `open docs/presentation/index.html` (macOS).
+- **GitHub Pages (optional):** in the repository **Settings → Pages**, set **Build and deployment → Source** to **Deploy from a branch**, branch **`main`**, folder **`/docs`**. The site will be available at  
+  `https://<your-username>.github.io/1-mlops-kickoff-repo/presentation/`  
+  (GitHub serves `index.html` under each folder inside `docs/`).
+
 ---
 
 ## 1. Business Case
